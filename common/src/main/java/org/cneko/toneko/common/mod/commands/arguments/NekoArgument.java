@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.util.PlayerUtil;
 
 import static org.cneko.toneko.common.mod.util.TextUtil.translatable;
@@ -51,7 +52,7 @@ public class NekoArgument implements ArgumentType<ServerPlayer> {
     }
 
     private boolean checkNeko(Player player) {
-        return player.isNeko();
+        return NekoAccess.isNeko(player);
     }
 
     @Override

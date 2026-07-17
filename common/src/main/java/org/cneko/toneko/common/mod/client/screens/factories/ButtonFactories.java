@@ -18,6 +18,7 @@ import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder.ButtonFactor
 import org.cneko.toneko.common.mod.entities.CrystalNekoEntity;
 import org.cneko.toneko.common.mod.entities.INeko;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.entities.NoelleMaidNekoEntity;
 import org.cneko.toneko.common.mod.items.ToNekoItems;
 import org.cneko.toneko.common.mod.packets.MateWithCrystalNekoPayload;
@@ -75,7 +76,7 @@ public class ButtonFactories {
                 player.displayClientMessage(TextUtil.randomTranslatabledComponent("message.toneko.neko.breed_fail_zako", 10, neko.getName().getString()),ACTION_BAR);
             }else {
                 // 哪只猫猫会拒绝猫薄荷呢
-                NekoMateScreen.open(neko, List.of(player),null);
+                NekoMateScreen.open(neko, List.of(NekoAccess.require(player)),null);
                 player.displayClientMessage(TextUtil.randomTranslatabledComponent("message.toneko.neko.breed_success_zako", 3, neko.getName().getString()),ACTION_BAR);
             }
             return;
@@ -213,7 +214,7 @@ public class ButtonFactories {
                 player.displayClientMessage(TextUtil.randomTranslatabledComponent("message.toneko.neko.breed_fail_zako", 10, neko.getName().getString()),ACTION_BAR );
             }else {
                 // 哪只猫猫会拒绝猫薄荷呢
-                NekoMateScreen.open(neko,List.of(player),null);
+                NekoMateScreen.open(neko,List.of(NekoAccess.require(player)),null);
                 player.displayClientMessage(TextUtil.randomTranslatabledComponent("message.toneko.neko.breed_success_zako", 3, neko.getName().getString()),ACTION_BAR);
             }
         }else {

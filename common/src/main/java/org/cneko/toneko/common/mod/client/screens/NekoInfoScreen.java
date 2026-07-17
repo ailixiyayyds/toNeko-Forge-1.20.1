@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import org.cneko.toneko.common.mod.api.NekoLevelRegistry;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.jetbrains.annotations.NotNull;
 
 import static org.cneko.toneko.common.mod.util.TextUtil.translatable;
@@ -51,6 +52,7 @@ public class NekoInfoScreen extends Screen {
 
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
+        INeko neko = NekoAccess.require(player);
 
         int left = 20;
         int y = 20;
@@ -62,18 +64,18 @@ public class NekoInfoScreen extends Screen {
 
         // Status
         guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.status",
-                translatable(player.isNeko() ? "screen.toneko.neko_info.yes" : "screen.toneko.neko_info.no")),
+                translatable(neko.isNeko() ? "screen.toneko.neko_info.yes" : "screen.toneko.neko_info.no")),
                 left, y, LABEL_COLOR, false);
         y += lineHeight;
 
-        if (!player.isNeko()) {
+        if (!neko.isNeko()) {
             y += lineHeight;
             guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.not_neko"), left, y, 0xFF5555, false);
             return;
         }
 
         // Nickname
-        String nick = player.getNickName();
+        String nick = neko.getNickName();
         if (!nick.isEmpty()) {
             guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.nickname", nick),
                     left, y, LABEL_COLOR, false);
@@ -87,8 +89,8 @@ public class NekoInfoScreen extends Screen {
                 left, y, SECTION_COLOR, true);
         y += lineHeight;
 
-        boolean isBaby = player.isNekoBaby();
-        double ageScale = player.getNekoAgeScale();
+        boolean isBaby = neko.isNekoBaby();
+        double ageScale = neko.getNekoAgeScale();
         int growthPercent = (int) Math.round((ageScale - 0.3) / 0.7 * 100);
         int apparentAge = getApparentAge(ageScale);
 
@@ -114,13 +116,13 @@ public class NekoInfoScreen extends Screen {
                 left, y, SECTION_COLOR, true);
         y += lineHeight;
 
-        float totalLevel = player.getNekoLevel();
+        float totalLevel = neko.getNekoLevel();
         guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.total_level", String.format("%.1f", totalLevel)),
                 left + 10, y, VALUE_COLOR, false);
         y += lineHeight;
 
         // Base factor
-        double baseRaw = player.getNekoLevelFactorRaw("base");
+        double baseRaw = neko.getNekoLevelFactorRaw("base");
         double baseLevel = NekoLevelRegistry.base().getLevel(baseRaw);
         guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.base_factor",
                         String.format("%.1f", baseLevel), String.format("%.0f", baseRaw)),
@@ -128,7 +130,7 @@ public class NekoInfoScreen extends Screen {
         y += lineHeight;
 
         // Interaction factor
-        double interactionRaw = player.getNekoLevelFactorRaw("interaction");
+        double interactionRaw = neko.getNekoLevelFactorRaw("interaction");
         double interactionLevel = NekoLevelRegistry.interaction().getLevel(interactionRaw);
         guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.interaction_factor",
                         String.format("%.1f", interactionLevel), String.format("%.0f", interactionRaw)),
@@ -136,7 +138,7 @@ public class NekoInfoScreen extends Screen {
         y += lineHeight;
 
         // Combat factor
-        double combatRaw = player.getNekoLevelFactorRaw("combat");
+        double combatRaw = neko.getNekoLevelFactorRaw("combat");
         double combatLevel = NekoLevelRegistry.combat().getLevel(combatRaw);
         guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.combat_factor",
                         String.format("%.1f", combatLevel), String.format("%.0f", combatRaw)),
@@ -150,8 +152,8 @@ public class NekoInfoScreen extends Screen {
                 left, y, SECTION_COLOR, true);
         y += lineHeight;
 
-        float energy = player.getNekoEnergy();
-        float maxEnergy = player.getMaxNekoEnergy();
+        float energy = neko.getNekoEnergy();
+        float maxEnergy = neko.getMaxNekoEnergy();
         guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.energy",
                         String.format("%.0f", energy), String.format("%.0f", maxEnergy)),
                 left + 10, y, VALUE_COLOR, false);
@@ -164,7 +166,7 @@ public class NekoInfoScreen extends Screen {
                 left, y, SECTION_COLOR, true);
         y += lineHeight;
 
-        guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.ability", player.getNekoAbility()),
+        guiGraphics.drawString(this.font, translatable("screen.toneko.neko_info.ability", neko.getNekoAbility()),
                 left + 10, y, VALUE_COLOR, false);
     }
 

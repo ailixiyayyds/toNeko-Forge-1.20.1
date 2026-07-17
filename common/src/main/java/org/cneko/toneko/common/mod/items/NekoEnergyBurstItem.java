@@ -324,7 +324,7 @@ public class NekoEnergyBurstItem extends Item {
         player.getCooldowns().addCooldown(this, 10);
 
         // ---- 升级 ----
-        org.cneko.toneko.common.mod.api.NekoLevelRegistry.combat().addRaw(player, levelUp.get());
+        org.cneko.toneko.common.mod.api.NekoLevelRegistry.combat().addRaw(NekoAccess.require(player), levelUp.get());
 
         return InteractionResultHolder.success(player.getItemInHand(usedHand));
     }

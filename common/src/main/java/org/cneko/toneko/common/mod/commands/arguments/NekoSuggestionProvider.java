@@ -6,6 +6,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
+import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -37,11 +39,12 @@ public class NekoSuggestionProvider implements SuggestionProvider<CommandSourceS
 
     private boolean isValidNeko(ServerPlayer target, ServerPlayer commander, boolean checkOwnership) {
         // 服务器端检查是否为Neko
-        if (!target.isNeko()) return false;
+        INeko targetNeko = NekoAccess.require(target);
+        if (!targetNeko.isNeko()) return false;
 
         // 若需要检查主人关系
         if (checkOwnership) {
-            return commander != null && target.hasOwner(commander.getUUID());
+            return commander != null && targetNeko.hasOwner(commander.getUUID());
         }
 
         return true;

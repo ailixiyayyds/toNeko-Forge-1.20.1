@@ -10,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.cneko.toneko.common.mod.entities.boss.NekoBoss;
 import org.cneko.toneko.common.mod.misc.ToNekoEnchantments;
@@ -60,8 +61,8 @@ public class ContractItem extends Item {
                 }else {
                     neko.addOwner(player.getUUID(), new INeko.Owner(List.of(),0));
                     player.giveExperienceLevels(-30);
-                    if (player.isNeko()){
-                        org.cneko.toneko.common.mod.api.NekoLevelRegistry.interaction().addRaw(player, 10.0);
+                    if (NekoAccess.isNeko(player)){
+                        org.cneko.toneko.common.mod.api.NekoLevelRegistry.interaction().addRaw(NekoAccess.require(player), 10.0);
                     }
                     player.sendSystemMessage(Component.translatable("item.toneko.contract.success",neko.getEntity().getName()));
                     // 删除物品

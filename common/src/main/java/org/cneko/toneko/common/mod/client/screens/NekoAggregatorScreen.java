@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import org.cneko.toneko.common.mod.blocks.NekoAggregatorBlock;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.recipes.NekoAggregatorInput;
 import org.cneko.toneko.common.mod.recipes.NekoAggregatorRecipe;
 import org.cneko.toneko.common.mod.recipes.ToNekoRecipes;
@@ -65,8 +66,8 @@ public class NekoAggregatorScreen extends AbstractContainerScreen<NekoAggregator
         guiGraphics.blit(CRAFTING_TABLE_LOCATION, x, y, 0, 0, this.imageWidth, this.imageHeight);
 
         // 2. 获取数据
-        float currentEnergy = this.menu.player.getNekoEnergy();
-        float maxEnergy = this.menu.player.getMaxNekoEnergy();
+        float currentEnergy = NekoAccess.getEnergy(this.menu.player);
+        float maxEnergy = NekoAccess.getMaxEnergy(this.menu.player);
         int requiredEnergy = getClientSideRequiredEnergy();
 
         // 3. 渲染能量条 (渐变)
@@ -159,8 +160,8 @@ public class NekoAggregatorScreen extends AbstractContainerScreen<NekoAggregator
     }
 
     private void renderEnergyTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        float current = this.menu.player.getNekoEnergy();
-        float max = this.menu.player.getMaxNekoEnergy();
+        float current = NekoAccess.getEnergy(this.menu.player);
+        float max = NekoAccess.getMaxEnergy(this.menu.player);
         int required = getClientSideRequiredEnergy();
 
         List<Component> tooltip = new ArrayList<>();

@@ -19,6 +19,8 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
+import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.jetbrains.annotations.NotNull;
 
 import static org.cneko.toneko.common.mod.util.TextUtil.translatable;
@@ -41,8 +43,9 @@ public class NekoPotionItem extends PotionItem {
         // 如果食物被成功吃掉并且玩家还不是猫猫，则把玩家变成猫猫
         InteractionResultHolder<ItemStack> result = super.use(world, neko, hand);
         if (world.isClientSide()) return;
-        if(result.getResult() == InteractionResult.CONSUME && !neko.isNeko()){
-            neko.setNeko(true);
+        INeko nekoState = NekoAccess.require(neko);
+        if(result.getResult() == InteractionResult.CONSUME && !nekoState.isNeko()){
+            nekoState.setNeko(true);
             if(neko instanceof ServerPlayer player){
                 //哼!哼!喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵!
                 // 向猫猫显示标题
@@ -54,9 +57,9 @@ public class NekoPotionItem extends PotionItem {
                 // 让猫猫听到经验音效
                 player.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
             }
-        }else if (result.getResult() == InteractionResult.CONSUME &&neko.isNeko()){
+        }else if (result.getResult() == InteractionResult.CONSUME && nekoState.isNeko()){
             // 恢复一些能量
-            neko.setNekoEnergy(neko.getNekoEnergy() + 100);
+            NekoAccess.setEnergy(neko, NekoAccess.getEnergy(neko) + 100);
         }
     }
 

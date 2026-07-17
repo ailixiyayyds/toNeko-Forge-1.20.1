@@ -60,7 +60,7 @@ public class CrystalNekoEntity extends NekoEntity{
 
     @Override
     public String generateAIPrompt(Player player) {
-        return PromptRegistry.generatePrompt(this,player, """
+        return PromptRegistry.generatePrompt(this, NekoAccess.require(player), """
                 # 角色设定
                 你是一只名叫 CrystalNeko（水晶猫猫）的猫娘，同时也是 Minecraft 模组作者。虽然现在看起来很可爱，但有着不堪回首的黑历史...
                 

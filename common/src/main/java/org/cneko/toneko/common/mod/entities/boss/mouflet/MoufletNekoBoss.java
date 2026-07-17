@@ -33,6 +33,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.cneko.toneko.common.mod.entities.boss.NekoBoss;
 import org.cneko.toneko.common.mod.items.ToNekoItems;
@@ -405,10 +406,10 @@ public class MoufletNekoBoss extends NekoEntity implements NekoBoss, PlayerRidea
                 player.hurt(player.damageSources().thorns(this), reflect);
                 // 攻击者失去饱食8能量10
                 player.getFoodData().eat(-8, 0.0f); // 饱食度减少
-                if (player.getNekoEnergy() > 50) {
-                    player.setNekoEnergy(player.getNekoEnergy() - 50); // 能量减少
+                if (NekoAccess.getEnergy(player) > 50) {
+                    NekoAccess.setEnergy(player, NekoAccess.getEnergy(player) - 50); // 能量减少
                 } else {
-                    player.setNekoEnergy(0); // 能量不能为负
+                    NekoAccess.setEnergy(player, 0); // 能量不能为负
                 }
             }
             // 宠物模式战斗保护：主人被攻击时，临时提升攻击力

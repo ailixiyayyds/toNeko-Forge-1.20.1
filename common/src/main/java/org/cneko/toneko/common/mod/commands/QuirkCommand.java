@@ -9,6 +9,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.cneko.toneko.common.api.Permissions;
+import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.packets.QuirkQueryPayload;
 import org.cneko.toneko.common.mod.packets.ToNekoNetworking;
 import org.cneko.toneko.common.mod.quirks.Quirk;
@@ -61,7 +63,7 @@ public class QuirkCommand {
         ServerPlayer player = context.getSource().getPlayer();
         // 打开设置屏幕
         ToNekoNetworking.send(player, new QuirkQueryPayload(
-                QuirkUtil.quirkToIds(player.getQuirks()),
+                QuirkUtil.quirkToIds(NekoAccess.require(player).getQuirks()),
                 QuirkRegister.getQuirkIds().stream().toList(),true)
         );
         return 1;
@@ -69,12 +71,13 @@ public class QuirkCommand {
 
     public static int listQuirks(CommandContext<CommandSourceStack> context) {
        Player player = context.getSource().getPlayer();
-        if(player.getQuirks().isEmpty()){
+        INeko nekoState = NekoAccess.require(player);
+        if(nekoState.getQuirks().isEmpty()){
             context.getSource().sendSystemMessage(translatable("command.quirk.no_any_quirk"));
             return 1;
         }
         // 列出quirks
-        Collection<Quirk> quirks = player.getQuirks();
+        Collection<Quirk> quirks = nekoState.getQuirks();
         // 转换为id
         List<String> quirkIds = quirks.stream().map(Quirk::getId).toList();
         // 翻译
@@ -89,6 +92,7 @@ public class QuirkCommand {
 
     public static int addOrRemoveQuirk(CommandContext<CommandSourceStack> context) {
         Player neko = context.getSource().getPlayer();
+        INeko nekoState = NekoAccess.require(neko);
         String quirk = StringArgumentType.getString(context, "quirk");
         if(!QuirkRegister.hasQuirk(quirk)){
             context.getSource().sendSystemMessage(translatable("command.quirk.not_quirk"));
@@ -96,19 +100,19 @@ public class QuirkCommand {
         }
         // 如果是添加
         context.getNodes().stream().filter(node -> node.getNode().getName().equals("add")).findFirst().ifPresent(node -> {
-            if(neko.hasQuirk(QuirkRegister.getById(quirk))){
+            if(nekoState.hasQuirk(QuirkRegister.getById(quirk))){
                 context.getSource().sendSystemMessage(translatable("command.quirk.already_quirk"));
             }else {
-                neko.addQuirk(QuirkRegister.getById(quirk));
+                nekoState.addQuirk(QuirkRegister.getById(quirk));
                 context.getSource().sendSystemMessage(translatable("command.quirk.add", quirk));
             }
         });
         // 删除
         context.getNodes().stream().filter(node -> node.getNode().getName().equals("remove")).findFirst().ifPresent(node -> {
-            if(!neko.hasQuirk(QuirkRegister.getById(quirk))){
+            if(!nekoState.hasQuirk(QuirkRegister.getById(quirk))){
                 context.getSource().sendSystemMessage(translatable("command.quirk.not_has_quirk"));
             }else {
-                neko.removeQuirk(QuirkRegister.getById(quirk));
+                nekoState.removeQuirk(QuirkRegister.getById(quirk));
                 context.getSource().sendSystemMessage(translatable("command.quirk.remove", quirk));
             }
         });

@@ -6,6 +6,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
+import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 
 
 import java.util.concurrent.CompletableFuture;
@@ -31,14 +33,15 @@ public class WordSuggestionProvider implements SuggestionProvider<CommandSourceS
             return builder.buildFuture();
         }else {
             if (!isValidNeko(neko, commander)) return builder.buildFuture();
+            INeko nekoState = NekoAccess.require(neko);
             if (type == Types.BLOCK) {
-                neko.getBlockedWords().forEach(blockWord -> {
+                nekoState.getBlockedWords().forEach(blockWord -> {
                     if (blockWord.replace().toLowerCase().startsWith(remaining)) {
                         builder.suggest(blockWord.replace());
                     }
                 });
             } else if (type == Types.ALIASES) {
-                neko.getOwner(commander.getUUID()).getAliases().forEach(alias -> {
+                nekoState.getOwner(commander.getUUID()).getAliases().forEach(alias -> {
                     if (alias.toLowerCase().startsWith(remaining)) {
                         builder.suggest(alias);
                     }
@@ -50,10 +53,11 @@ public class WordSuggestionProvider implements SuggestionProvider<CommandSourceS
 
     private boolean isValidNeko(ServerPlayer neko, ServerPlayer commander) {
         // 服务器端检查是否为Neko
-        if (!neko.isNeko()) return false;
+        INeko nekoState = NekoAccess.require(neko);
+        if (!nekoState.isNeko()) return false;
 
         // 若需要检查主人关系
-        return commander != null && neko.hasOwner(commander.getUUID());
+        return commander != null && nekoState.hasOwner(commander.getUUID());
     }
 
     enum Types{

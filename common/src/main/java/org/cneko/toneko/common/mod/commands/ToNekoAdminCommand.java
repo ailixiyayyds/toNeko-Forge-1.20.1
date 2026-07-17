@@ -18,6 +18,7 @@ import org.cneko.toneko.common.api.Permissions;
 import org.cneko.toneko.common.mod.ai.provider.AIServiceProvider;
 import org.cneko.toneko.common.mod.ai.provider.AIServiceProviderRegistry;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.cneko.toneko.common.mod.api.NekoLevelRegistry;
 import org.cneko.toneko.common.mod.misc.Messaging;
@@ -165,7 +166,7 @@ public class ToNekoAdminCommand {
             return 0;
         }
         float level = FloatArgumentType.getFloat(context, "level");
-        org.cneko.toneko.common.mod.api.NekoLevelRegistry.base().setRaw(neko, level);
+        org.cneko.toneko.common.mod.api.NekoLevelRegistry.base().setRaw(NekoAccess.require(neko), level);
         source.sendSystemMessage(translatable("command.tonekoadmin.set_level", neko.getName().getString(), level));
         return 1;
     }

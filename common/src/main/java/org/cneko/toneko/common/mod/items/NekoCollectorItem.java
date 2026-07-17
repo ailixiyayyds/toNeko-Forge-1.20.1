@@ -13,6 +13,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.phys.AABB;
 import org.cneko.toneko.common.mod.codecs.CountCodecs;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.misc.ToNekoAttributes;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +51,7 @@ public class NekoCollectorItem extends Item {
 
     @Override
     public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-        if (!(entity instanceof Player player) ||(world.isClientSide()) || player.isNeko()) return;
+        if (!(entity instanceof Player player) || world.isClientSide() || NekoAccess.isNeko(player)) return;
         // 获取玩家3格方块内的猫猫数量
         float radius = 3.0f;
         int catCount = 0;
