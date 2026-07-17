@@ -1,0 +1,24 @@
+package org.cneko.toneko.fabric.items;
+
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import org.cneko.toneko.common.mod.blocks.*;
+
+import static org.cneko.toneko.common.mod.blocks.ToNekoBlocks.*;
+import static org.cneko.toneko.common.Bootstrap.MODID;
+
+public class ToNekoBlocks {
+    public static void init(){
+        CATNIP = Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(MODID, "catnip"),
+                new CatnipBlock());
+        NEKO_AGGREGATOR = Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(MODID, "neko_aggregator"),
+                new NekoAggregatorBlock(BlockBehaviour.Properties.of().strength(5.0f).requiresCorrectToolForDrops()));
+        NEKO_BLOCK = Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(MODID, "neko_block"),
+                new Block(BlockBehaviour.Properties.of().strength(5.0f).requiresCorrectToolForDrops()));
+        NEKO_DIAMOND_BLOCK = Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(MODID, "neko_diamond_block"),
+                new Block(BlockBehaviour.Properties.of().strength(5.0f).requiresCorrectToolForDrops()));
+    }
+}

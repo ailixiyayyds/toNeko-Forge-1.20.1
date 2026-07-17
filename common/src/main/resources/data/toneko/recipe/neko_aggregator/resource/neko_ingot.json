@@ -1,0 +1,19 @@
+{
+  "type": "toneko:neko_aggregator",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+
+  "pattern": [
+    "   ",
+    " I ",
+    "   "
+  ],
+  "energy": 5.0,
+  "result": {
+    "id": "toneko:neko_ingot",
+    "count": 1
+  }
+}

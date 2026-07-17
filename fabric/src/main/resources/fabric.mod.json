@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "toneko",
+  "version": "${version}",
+  "name": "toNeko",
+  "description": "可爱即是正义!",
+  "authors": [
+    "CrystalNeko"
+  ],
+  "contributors": [
+    "MrHua269/Lora4967",
+    "QWERTY770",
+    "HappyRespawnanchor",
+    "ΗγΤζΡβΒι",
+    "homewool",
+    "pil0lo",
+    "yichifauzi",
+    "W.D.Water"
+  ],
+  "contact": {
+    "website": "https://github.com/CSNeko/toNeko",
+    "repo": "https://github.com/ailixiyayyds/toNeko/tree/1.20.1-backport",
+    "issues": "https://github.com/ailixiyayyds/toNeko/issues",
+    "homepage": "https://github.com/CSNeko/toNeko"
+  },
+  "license": "GPL-v3",
+  "icon": "assets/toneko/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "org.cneko.toneko.fabric.datagen.ToNekoDataGenerator"
+    ],
+    "client": [
+      "org.cneko.toneko.fabric.client.ToNekoClient"
+    ],
+    "main": [
+      "org.cneko.toneko.fabric.ToNeko"
+    ],
+    "modmenu": [ "org.cneko.toneko.fabric.client.msic.ModMenuImpl" ],
+    "emi": [ "org.cneko.toneko.fabric.client.msic.ToNekoEmiPlugin" ]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": "1.20.1",
+    "geckolib": "*"
+  },
+  "suggests": {
+    "luckperms": "*",
+    "trinkets": "*"
+  },
+  "breaks": {
+    "optifabric": "*",
+    "optifine": "*"
+  },
+  "mixins": [
+    "toneko.mixins.json",
+    "fabric.toneko.mixins.json"
+  ],
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/hQ6Mm7wtt4"
+      },
+      "update_checker": true
+    }
+  },
+  "accessWidener" : "toneko.accesswidener"
+}

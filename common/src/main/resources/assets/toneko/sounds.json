@@ -1,0 +1,46 @@
+{
+  "music.kawaii": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "toneko:music/kawaii",
+        "stream": true
+      }
+    ]
+  },
+  "music.never_gonna_give_you_up": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "toneko:music/never_gonna_give_you_up",
+        "stream": true
+      }
+    ]
+  },
+  "item.bazooka.biu": {
+    "category": "master",
+    "sounds": [
+      {"name": "toneko:item/bazooka/biu/biu0"},
+      {"name": "toneko:item/bazooka/biu/biu1"},
+      {"name": "toneko:item/bazooka/biu/biu2"},
+      {"name": "toneko:item/bazooka/biu/biu3"},
+      {"name": "toneko:item/bazooka/biu/biu4"},
+      {"name": "toneko:item/bazooka/biu/biu5"}
+    ]
+  },
+  "item.bazooka.meow": {
+    "category": "master",
+    "sounds": [
+      {"name": "toneko:item/bazooka/meow/meow1"},
+      {"name": "toneko:item/bazooka/meow/meow2"},
+      {"name": "toneko:item/bazooka/meow/meow3"},
+      {"name": "toneko:item/bazooka/meow/meow4"}
+    ]
+  },
+  "entity.neko.alarm": {
+    "category": "hostile",
+    "sounds": [
+      {"name": "toneko:entity/neko/alarm0", "volume": 0.8}
+    ]
+  }
+}

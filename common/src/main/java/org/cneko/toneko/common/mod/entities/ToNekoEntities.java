@@ -1,0 +1,206 @@
+package org.cneko.toneko.common.mod.entities;
+
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.biome.Biomes;
+import org.cneko.toneko.common.mod.api.NekoNameRegistry;
+import org.cneko.toneko.common.mod.api.NekoSkinRegistry;
+import org.cneko.toneko.common.mod.entities.boss.mouflet.MoufletNekoBoss;
+import org.cneko.toneko.common.util.ConfigUtil;
+import org.jetbrains.annotations.ApiStatus;
+
+import java.util.Set;
+import java.util.function.Supplier;
+
+import static org.cneko.toneko.common.mod.util.ResourceLocationUtil.toNekoLoc;
+
+public class ToNekoEntities {
+    public static ResourceLocation ADVENTURER_NEKO_ID = toNekoLoc("adventurer_neko");
+    public static EntityType<AdventurerNeko> ADVENTURER_NEKO;
+    public static ResourceLocation CRYSTAL_NEKO_ID = toNekoLoc("crystal_neko");
+    public static EntityType<CrystalNekoEntity> CRYSTAL_NEKO;
+    public static ResourceLocation GHOST_NEKO_ID = toNekoLoc("ghost_neko");
+    public static EntityType<GhostNekoEntity> GHOST_NEKO;
+    public static ResourceLocation FIGHTING_NEKO_ID = toNekoLoc("fighting_neko");
+    public static EntityType<FightingNekoEntity> FIGHTING_NEKO;
+    public static ResourceLocation MOUFLET_NEKO_BOSS_ID = toNekoLoc("mouflet_neko_boss");
+    public static EntityType<MoufletNekoBoss> MOUFLET_NEKO_BOSS;
+    public static ResourceLocation RAVENN_ID = toNekoLoc("ravenn");
+    public static EntityType<RavennEntity> RAVENN_ENTITY;
+    public static ResourceLocation NOELLE_MAID_NEKO_ID = toNekoLoc("noelle_maid_neko");
+    public static EntityType<NoelleMaidNekoEntity> NOELLE_MAID_NEKO;
+    public static EntityType<AmmunitionEntity> AMMUNITION_ENTITY;
+    public static ResourceLocation AMMUNITION_ENTITY_ID = toNekoLoc("ammunition_entity");
+    public static void init() {
+        // 注册名字
+        Set<String> names = Set.of(
+                "Luna","Mochi","Poppy","Misty","Snowy","Coco","Peaches","Bubbles","Daisy","Cherry",
+                "ひなた","もふこ","ちゃちゃまる","ひめにゃん",
+                "Felicity","Purrin","Catrina","Fluffy","Meowgical","Felina","Ayame","Cinnamon","Momo",
+                "蜜柚柚","桃桃酥","璃玖喵","星奈铃","幽月小菓",
+                "にゃん子","綿菓子","千夏コメット","蜜波リリエル","月詠ネオン",
+                "Stardustle","Mewblette","Velvetpaw","Luminaeon",
+                "にゃも","夢羽","みるき","鈴菜","小夜子","月見里","千代乃","雨鈴","未羽"
+        );
+        NekoNameRegistry.register(names);
+
+
+    }
+
+    @ApiStatus.Internal
+    public static Supplier<EntityType<CrystalNekoEntity>> getCrystalNeko(){
+        return
+                ()-> EntityType.Builder.of(CrystalNekoEntity::new, MobCategory.CREATURE)
+                .sized(0.5f,1.7f).clientTrackingRange(8)
+                .build("crystal_neko");
+    }
+    @ApiStatus.Internal
+    public static Supplier<EntityType<AdventurerNeko>> getAdventurerNeko(){
+        return
+                ()-> EntityType.Builder.of(AdventurerNeko::new, MobCategory.CREATURE)
+                        .sized(0.5f,1.7f).clientTrackingRange(8)
+                        .build("adventure_neko");
+    }
+    @ApiStatus.Internal
+    public static Supplier<EntityType<GhostNekoEntity>> getGhostNeko(){
+        return
+                ()-> EntityType.Builder.of(GhostNekoEntity::new, MobCategory.CREATURE)
+                        .sized(0.5f,1.6f).clientTrackingRange(8)
+                        .build("ghost_neko");
+    }
+    @ApiStatus.Internal
+     public static Supplier<EntityType<FightingNekoEntity>> getFightingNeko(){
+        return
+                ()-> EntityType.Builder.of(FightingNekoEntity::new, MobCategory.CREATURE)
+                        .sized(0.5f,1.7f).clientTrackingRange(8)
+                        .build("fighting_neko");
+    }
+    @ApiStatus.Internal
+    public static Supplier<EntityType<MoufletNekoBoss>> getMoufletNekoBoss(){
+        return
+                ()-> EntityType.Builder.of(MoufletNekoBoss::new, MobCategory.MONSTER)
+                        .sized(0.5f,1.6f).clientTrackingRange(8).updateInterval(3)
+                        .build("mouflet_neko_boss");
+    }
+    @ApiStatus.Internal
+    public static Supplier<EntityType<AmmunitionEntity>> getAmmunitionEntity(){
+        return
+                ()-> EntityType.Builder.of(AmmunitionEntity::new, MobCategory.MISC)
+                        .sized(0.25f,0.25f).clientTrackingRange(4).updateInterval(20)
+                        .build("ammunition_entity");
+    }
+    @ApiStatus.Internal
+    public static Supplier<EntityType<RavennEntity>> getRavennEntity(){
+        return
+                ()-> EntityType.Builder.of(RavennEntity::new,MobCategory.CREATURE)
+                        .sized(0.5f,1.7f).clientTrackingRange(8)
+                        .build("ravenn");
+    }
+    @ApiStatus.Internal
+    public static Supplier<EntityType<NoelleMaidNekoEntity>> getNoelleMaidNeko(){
+        return
+                ()-> EntityType.Builder.of(NoelleMaidNekoEntity::new, MobCategory.CREATURE)
+                        .sized(0.5f,1.7f).clientTrackingRange(8)
+                        .build("noelle_maid_neko");
+    }
+
+    /**
+     * 注册猫娘在各群系的生成规则。由各平台的实体注册完成后调用。
+     * 使用 Fabric API 的 BiomeModifications，在 NeoForge 上通过 FFAPI 桥接。
+     */
+    public static void registerBiomeSpawns(
+            EntityType<AdventurerNeko> adventurer,
+            EntityType<GhostNekoEntity> ghost,
+            EntityType<CrystalNekoEntity> crystal,
+            EntityType<FightingNekoEntity> fighting,
+            EntityType<NoelleMaidNekoEntity> noelle) {
+
+        // ===== 冒险猫娘：广泛群系 =====
+        BiomeModifications.addSpawn(
+                BiomeSelectors.tag(BiomeTags.IS_MOUNTAIN)
+                        .or(BiomeSelectors.tag(BiomeTags.IS_FOREST))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_TAIGA))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_JUNGLE))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_SAVANNA))
+                        .or(BiomeSelectors.includeByKey(Biomes.PLAINS))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_RIVER))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_BEACH))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_HILL)),
+                MobCategory.CREATURE, adventurer,
+                35, 2, 5
+        );
+        // 冒险猫娘：樱花林等花海超高刷新
+        BiomeModifications.addSpawn(
+                BiomeSelectors.includeByKey(Biomes.CHERRY_GROVE)
+                        .or(BiomeSelectors.includeByKey(Biomes.FLOWER_FOREST))
+                        .or(BiomeSelectors.includeByKey(Biomes.SUNFLOWER_PLAINS))
+                        .or(BiomeSelectors.includeByKey(Biomes.MEADOW)),
+                MobCategory.CREATURE, adventurer,
+                60, 3, 7
+        );
+
+        // ===== 幽灵猫娘 =====
+        BiomeModifications.addSpawn(
+                BiomeSelectors.tag(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS)
+                        .or(BiomeSelectors.tag(BiomeTags.IS_FOREST))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_TAIGA)),
+                MobCategory.CREATURE, ghost,
+                25, 1, 3
+        );
+        // 幽灵猫娘：樱花林/黑森林/红树林
+        BiomeModifications.addSpawn(
+                BiomeSelectors.includeByKey(Biomes.CHERRY_GROVE)
+                        .or(BiomeSelectors.includeByKey(Biomes.DARK_FOREST))
+                        .or(BiomeSelectors.includeByKey(Biomes.MANGROVE_SWAMP)),
+                MobCategory.CREATURE, ghost,
+                40, 1, 4
+        );
+
+        // ===== 水晶猫娘（生日限定）=====
+        if (ConfigUtil.IS_BIRTHDAY) {
+            BiomeModifications.addSpawn(
+                    BiomeSelectors.foundInOverworld(),
+                    MobCategory.CREATURE, crystal,
+                    45, 3, 7
+            );
+            BiomeModifications.addSpawn(
+                    BiomeSelectors.includeByKey(Biomes.CHERRY_GROVE)
+                            .or(BiomeSelectors.includeByKey(Biomes.FLOWER_FOREST))
+                            .or(BiomeSelectors.includeByKey(Biomes.MEADOW)),
+                    MobCategory.CREATURE, crystal,
+                    70, 4, 9
+            );
+        }
+
+        // ===== 战斗猫娘：地狱/古城/山地 =====
+        BiomeModifications.addSpawn(
+                BiomeSelectors.tag(BiomeTags.IS_NETHER)
+                        .or(BiomeSelectors.tag(BiomeTags.HAS_ANCIENT_CITY))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_MOUNTAIN)),
+                MobCategory.CREATURE, fighting,
+                25, 1, 4
+        );
+
+        // ===== 诺艾尔女仆猫娘：花海、森林、平原 =====
+        BiomeModifications.addSpawn(
+                BiomeSelectors.includeByKey(Biomes.CHERRY_GROVE)
+                        .or(BiomeSelectors.includeByKey(Biomes.FLOWER_FOREST))
+                        .or(BiomeSelectors.includeByKey(Biomes.MEADOW))
+                        .or(BiomeSelectors.includeByKey(Biomes.SUNFLOWER_PLAINS)),
+                MobCategory.CREATURE, noelle,
+                35, 1, 3
+        );
+        BiomeModifications.addSpawn(
+                BiomeSelectors.tag(BiomeTags.IS_FOREST)
+                        .or(BiomeSelectors.includeByKey(Biomes.PLAINS))
+                        .or(BiomeSelectors.tag(BiomeTags.IS_RIVER)),
+                MobCategory.CREATURE, noelle,
+                15, 1, 2
+        );
+    }
+
+}

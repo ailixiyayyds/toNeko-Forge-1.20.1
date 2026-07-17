@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="GPL-3.0"
+
+[[mods]]
+modId="toneko"
+version="${version}"
+displayName="toNeko Forge 1.20.1 Backport"
+displayURL="https://github.com/ailixiyayyds/toNeko-Forge-1.20.1"
+authors="CSneko and contributors; Forge 1.20.1 backport maintained by ailixiyayyds"
+description="Independent open-source Forge 1.20.1 backport of toNeko."
+logoFile="assets/toneko/icon.png"
+
+[[dependencies.toneko]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.21,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.toneko]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.toneko]]
+modId="geckolib"
+mandatory=true
+versionRange="[4.4.0,)"
+ordering="NONE"
+side="BOTH"
