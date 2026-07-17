@@ -26,6 +26,7 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import org.cneko.toneko.common.mod.api.NekoLevelRegistry;
 import org.cneko.toneko.common.mod.api.events.WorldEvents;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.items.NekoEnergyBurstItem;
 import org.cneko.toneko.common.mod.items.ToNekoItems;
 import org.cneko.toneko.common.mod.quirks.ModQuirk;
@@ -80,20 +81,21 @@ public class ToNekoEvents {
 
     public static void onPlayerJoin(ServerGamePacketListenerImpl serverPlayNetworkHandler, PacketSender sender, MinecraftServer server) {
         ServerPlayer player = serverPlayNetworkHandler.getPlayer();
-        if(player.isNeko()){
+        INeko neko = NekoAccess.require(player);
+        if(neko.isNeko()){
             // 修复quirks
-            player.fixQuirks();
+            neko.fixQuirks();
             String name = TextUtil.getPlayerName(player);
-            for (Quirk quirk : player.getQuirks()){
+            for (Quirk quirk : neko.getQuirks()){
                 ModQuirk mq = quirk;
-                mq.onJoin(player);
+                mq.onJoin(neko);
             }
         }
     }
 
     public static void onPlayerQuit(ServerGamePacketListenerImpl serverPlayNetworkHandler, MinecraftServer server) {
         ServerPlayer player = serverPlayNetworkHandler.getPlayer();
-        if(player.isNeko()){
+        if(NekoAccess.isNeko(player)){
             String name = TextUtil.getPlayerName(player);
         }
     }

@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.entities.boss.mouflet.MoufletNekoBoss;
 import org.cneko.toneko.common.mod.quirks.Quirk;
 import org.jetbrains.annotations.Nullable;
@@ -104,11 +105,12 @@ public class CommonPlayerInteractionEvent {
         }
 
         InteractionContext context = new InteractionContext(sp, world, hand, targetNeko, hitResult);
+        INeko playerNeko = NekoAccess.require(sp);
 
         // 【修改点】：创建一个统一的 XP 处理器，在这里判断是否有主人
         Consumer<Quirk> xpHandler = q -> {
             if (targetNeko.hasOwner(sp.getUUID())) {
-                sp.setXpWithOwner(sp.getUUID(), q.getInteractionValue() + sp.getXpWithOwner(sp.getUUID()));
+                playerNeko.setXpWithOwner(sp.getUUID(), q.getInteractionValue() + playerNeko.getXpWithOwner(sp.getUUID()));
             }
         };
 
@@ -149,11 +151,12 @@ public class CommonPlayerInteractionEvent {
             return InteractionResult.PASS;
         }
 
-        for (Quirk q : sp.getQuirks()) {
+        INeko playerNeko = NekoAccess.require(sp);
+        for (Quirk q : playerNeko.getQuirks()) {
             if (q != null) {
-                InteractionResult result = q.onNekoAttack(sp, level, hand, le, hitResult);
+                InteractionResult result = q.onNekoAttack(playerNeko, level, hand, le, hitResult);
                 if (result == InteractionResult.SUCCESS) {
-                    sp.setXpWithOwner(sp.getUUID(), q.getInteractionValue() + sp.getXpWithOwner(sp.getUUID()));
+                    playerNeko.setXpWithOwner(sp.getUUID(), q.getInteractionValue() + playerNeko.getXpWithOwner(sp.getUUID()));
                 }
             }
         }

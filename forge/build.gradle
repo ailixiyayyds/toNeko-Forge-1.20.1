@@ -17,7 +17,7 @@ minecraft {
 sourceSets {
     main {
         java {
-            srcDirs('../common/src/main/java', 'src/main/java')
+            setSrcDirs(['../common/src/main/java', 'src/main/java'])
             // EMI is a Fabric-only recipe viewer integration. Forge support will
             // be added through its own optional adapter instead of shipping the
             // Fabric entrypoint in a Forge JAR.
@@ -26,7 +26,7 @@ sourceSets {
             // Development-only Fabric client command; no game content depends on it.
             exclude 'org/cneko/gal/common/client/TestGalCommand.java'
         }
-        resources.srcDirs('../common/src/main/resources', 'src/main/resources')
+        resources.setSrcDirs(['../common/src/main/resources', 'src/main/resources'])
     }
 }
 

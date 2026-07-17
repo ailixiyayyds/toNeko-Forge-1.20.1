@@ -13,28 +13,33 @@ mod, uses ForgeGradle and does not use Connector.
   excluded from the Forge source set.
 * The armor renderer uses Forge's `IClientItemExtensions` API for GeckoLib
   4.4.9.
+* The complete Forge source set now compiles and the reobfuscated Forge JAR is
+  produced successfully by `:forge:build`.
+* Player state calls in the migrated GUI, items, commands, events, networking,
+  AI goals and respawn-copy path now go through `NekoAccess` instead of relying
+  on compile-time interface injection.
 
-## Blocking migration boundary
+## Current runnable boundary
 
-The original common source relies on Architectury Loom interface injection:
-`Player` and other Minecraft classes are compiled as though they directly
-implement `INeko` and related interfaces. ForgeGradle does not alter the
-compile-time Minecraft classes this way, so calls such as `player.isNeko()`
-must be moved behind an explicit Forge API before a complete Forge JAR can be
-compiled.
+The generated JAR is a development milestone, not yet a release candidate.
+It still uses Forgified Fabric API for unported callbacks and requires a Forge
+client launch test. NekoAI and JLayer also need to be embedded or otherwise
+packaged with the release artifact before distribution.
 
 ## Next implementation order
 
-1. Add a Forge-owned player data API (capability/attachment wrapper) and
-   replace direct `Player` extension calls in common gameplay code.
-2. Port the player persistence, sync and scale/energy attributes to Forge
+1. Launch the Forge client with the generated JAR and fix loader, Mixin and
+   registry failures before gameplay testing.
+2. Add a Forge-owned player data API (capability/attachment wrapper), then port
+   player persistence, sync and scale/energy attributes to Forge
    events and networking. Keep the public `INeko` contract as the compatibility
    surface for JustARod.
 3. Replace Fabric command, lifecycle, interaction and resource callbacks with
    Forge event-bus registrations; remove the corresponding bridge use as each
    area is ported.
-4. Build and run toNeko Forge, then link JustARod Forge only to that produced
-   JAR. JustARod must never depend on the Fabric backport JAR.
+4. Embed the non-mod runtime libraries, run gameplay smoke tests, then link
+   JustARod Forge only to the produced Forge JAR. JustARod must never depend on
+   the Fabric backport JAR.
 
 Each stage should compile before moving to the next one. This keeps native
 Forge behaviour testable and avoids silently shipping a Connector-dependent

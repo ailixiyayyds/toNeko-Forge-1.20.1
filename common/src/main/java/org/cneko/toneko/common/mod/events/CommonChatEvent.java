@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.cneko.toneko.common.Stats;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.cneko.toneko.common.mod.misc.Messaging;
 import org.cneko.toneko.common.mod.util.EntityUtil;
@@ -28,12 +29,13 @@ public class CommonChatEvent {
     public static void onChatMessage(PlayerChatMessage message, ServerPlayer sender, ChatType.Bound params) {
         String originalContent = message.decoratedContent().getString();
         String playerName = TextUtil.getPlayerName(sender);
+        INeko senderNeko = NekoAccess.require(sender);
 
         // 1. 处理内容
-        String processedContent = Messaging.prepareMessage(originalContent, sender);
+        String processedContent = Messaging.prepareMessage(originalContent, senderNeko);
 
         // 2. 应用格式
-        String finalString = Messaging.formatMessage(processedContent, sender);
+        String finalString = Messaging.formatMessage(processedContent, senderNeko);
 
         // 2.5 区域模式加头衔
         boolean areaMode = ToNekoNetworkEvents.isPlayerAreaChat(sender.getUUID());
@@ -43,14 +45,14 @@ public class CommonChatEvent {
 
         // 3. 统计与经验逻辑
         int meowCount = Stats.getMeow(finalString);
-        org.cneko.toneko.common.mod.api.NekoLevelRegistry.interaction().addRaw(sender, meowCount / 1000.0);
+        org.cneko.toneko.common.mod.api.NekoLevelRegistry.interaction().addRaw(senderNeko, meowCount / 1000.0);
 
         if (ConfigUtil.isStatsEnable()) {
             Stats.meowInChat(playerName, meowCount);
         }
 
         // 4. 消息发送：区域模式仅附近玩家，全服模式所有玩家
-        Component finalComponent = Messaging.createComponentWithHover(finalString, sender);
+        Component finalComponent = Messaging.createComponentWithHover(finalString, senderNeko);
 
         if (areaMode) {
             sendMessageInRange(finalComponent, sender, AREA_RANGE);

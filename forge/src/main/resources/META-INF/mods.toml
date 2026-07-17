@@ -31,3 +31,17 @@ mandatory=true
 versionRange="[4.4.0,)"
 ordering="NONE"
 side="BOTH"
+
+[[dependencies.toneko]]
+modId="architectury"
+mandatory=true
+versionRange="[9.2.14,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.toneko]]
+modId="fabric_api"
+mandatory=true
+versionRange="[0.92.6,)"
+ordering="NONE"
+side="BOTH"

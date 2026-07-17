@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.entities.boss.mouflet.MoufletNekoBoss;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,21 +16,22 @@ public class ServerPlayerEntityMixin {
     @Inject(method = "restoreFrom", at = @At("HEAD"))
     private void toneko$restoreFrom(ServerPlayer oldPlayer, boolean keepEverything, CallbackInfo ci) {
         INeko newNeko = (INeko) this;
+        INeko oldNeko = NekoAccess.require(oldPlayer);
 
-        newNeko.setNeko(oldPlayer.isNeko());
-        newNeko.setNekoAge(oldPlayer.getNekoAge());
-        newNeko.setNekoLevelFactorData(oldPlayer.getNekoLevelFactorData());
-        newNeko.setNekoEnergy(oldPlayer.getNekoEnergy());
-        newNeko.setNickName(oldPlayer.getNickName());
+        newNeko.setNeko(oldNeko.isNeko());
+        newNeko.setNekoAge(oldNeko.getNekoAge());
+        newNeko.setNekoLevelFactorData(oldNeko.getNekoLevelFactorData());
+        newNeko.setNekoEnergy(oldNeko.getNekoEnergy());
+        newNeko.setNickName(oldNeko.getNickName());
 
         newNeko.getOwners().clear();
-        newNeko.getOwners().putAll(oldPlayer.getOwners());
+        newNeko.getOwners().putAll(oldNeko.getOwners());
 
         newNeko.getBlockedWords().clear();
-        newNeko.getBlockedWords().addAll(oldPlayer.getBlockedWords());
+        newNeko.getBlockedWords().addAll(oldNeko.getBlockedWords());
 
         newNeko.getQuirks().clear();
-        newNeko.getQuirks().addAll(oldPlayer.getQuirks());
+        newNeko.getQuirks().addAll(oldNeko.getQuirks());
     }
 
     @Inject(method = "stopRiding" , at = @At("HEAD"),cancellable = true)
@@ -39,8 +41,8 @@ public class ServerPlayerEntityMixin {
         if (vehicle instanceof MoufletNekoBoss boss) {
             if (!boss.allowDismount(player)){
                 // 需要消耗100能量挣脱
-                if (player.getNekoEnergy() >= 100) {
-                    player.setNekoEnergy(player.getNekoEnergy() - 100);
+                if (NekoAccess.getEnergy(player) >= 100) {
+                    NekoAccess.setEnergy(player, NekoAccess.getEnergy(player) - 100);
                 } else {
                     // 能量不足，取消下车
                     ci.cancel();

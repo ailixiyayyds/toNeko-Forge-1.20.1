@@ -241,10 +241,10 @@ public class ToNekoAdminCommand {
         }
         boolean isNeko = context.getArgument("is", Boolean.class);
         if(isNeko){
-            neko.setNeko(true);
+            NekoAccess.require(neko).setNeko(true);
             source.sendSystemMessage(translatable("command.tonekoadmin.set.true", neko.getName().getString()));
         }else {
-            neko.setNeko(false);
+            NekoAccess.require(neko).setNeko(false);
             source.sendSystemMessage(translatable("command.tonekoadmin.set.false", neko.getName().getString()));
         }
         return 1;

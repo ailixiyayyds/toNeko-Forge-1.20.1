@@ -22,6 +22,7 @@ import org.cneko.toneko.common.api.TickTasks;
 import org.cneko.toneko.common.mod.api.EntityPoseManager;
 import org.cneko.toneko.common.mod.entities.CrystalNekoEntity;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.genetics.api.IGeneticEntity;
 import org.cneko.toneko.common.mod.commands.ToNekoCommand;
 import org.cneko.toneko.common.mod.items.GeneEditorItem;
@@ -99,7 +100,7 @@ public class ToNekoNetworkEvents {
     public static void onMateWithCrystalNeko(MateWithCrystalNekoPayload mateWithCrystalNekoPayload, ToNekoNetworking.ServerContext context) {
         processNekoInteractive(context.player(), mateWithCrystalNekoPayload.uuid(), neko -> {
             if (neko instanceof CrystalNekoEntity cneko){
-                cneko.tryMating((ServerLevel) neko.level(), context.player());
+                cneko.tryMating((ServerLevel) neko.level(), NekoAccess.require(context.player()));
             }
         });
     }
@@ -230,7 +231,10 @@ public class ToNekoNetworkEvents {
                 ArmorStand lineStand = new ArmorStand(world, baseX, baseY, baseZ);
                 lineStand.setInvisible(true);
                 lineStand.setNoGravity(true);
-                lineStand.setMarker(true);
+                CompoundTag markerData = new CompoundTag();
+                lineStand.saveWithoutId(markerData);
+                markerData.putBoolean("Marker", true);
+                lineStand.load(markerData);
                 lineStand.setCustomNameVisible(true);
                 lineStand.setCustomName(Component.literal(""));
                 world.addFreshEntity(lineStand);
@@ -391,7 +395,7 @@ public class ToNekoNetworkEvents {
             return;
         }
         // 保存数据
-        var quirks = player.getQuirks();
+        var quirks = NekoAccess.require(player).getQuirks();
         quirks.clear();
         quirks.addAll(payload.getQuirks().stream().map(QuirkRegister::getById).toList());
     }
@@ -446,11 +450,12 @@ public class ToNekoNetworkEvents {
     private static void handleGuiSendRequest(ServerPlayer player, String targetUuid) {
         ServerPlayer neko = player.getServer().getPlayerList().getPlayer(UUID.fromString(targetUuid));
         if (neko == null) return;
-        if (!neko.isNeko()) {
+        INeko nekoState = NekoAccess.require(neko);
+        if (!nekoState.isNeko()) {
             player.sendSystemMessage(Component.translatable("command.toneko.player.notNeko", neko.getName().getString()));
             return;
         }
-        if (neko.hasOwner(player.getUUID())) {
+        if (nekoState.hasOwner(player.getUUID())) {
             player.sendSystemMessage(Component.translatable("command.toneko.player.alreadyOwner", neko.getName().getString()));
             return;
         }
@@ -471,7 +476,7 @@ public class ToNekoNetworkEvents {
         Player owner = player.getServer().getPlayerList().getPlayer(UUID.fromString(ownerUuid));
         if (owner == null) return;
         if (ownerMap.containsKey(owner) && ownerMap.get(owner).equals(player)) {
-            player.addOwner(owner.getUUID(), new INeko.Owner(new java.util.ArrayList<>(), 0));
+            NekoAccess.require(player).addOwner(owner.getUUID(), new INeko.Owner(new java.util.ArrayList<>(), 0));
             player.sendSystemMessage(Component.translatable("command.toneko.accept", owner.getName()).withStyle(ChatFormatting.GREEN));
             owner.sendSystemMessage(Component.translatable("command.toneko.player.accept", player.getName()).withStyle(ChatFormatting.GREEN));
             ownerMap.remove(owner);
@@ -496,41 +501,45 @@ public class ToNekoNetworkEvents {
     private static void handleGuiAddAlias(ServerPlayer player, String nekoUuid, String alias) {
         ServerPlayer neko = player.getServer().getPlayerList().getPlayer(UUID.fromString(nekoUuid));
         if (neko == null) return;
-        if (!neko.hasOwner(player.getUUID())) return;
-        neko.getOwner(player.getUUID()).getAliases().add(alias);
+        INeko nekoState = NekoAccess.require(neko);
+        if (!nekoState.hasOwner(player.getUUID())) return;
+        nekoState.getOwner(player.getUUID()).getAliases().add(alias);
         player.sendSystemMessage(Component.translatable("command.toneko.aliases.add", alias));
     }
 
     private static void handleGuiRemoveAlias(ServerPlayer player, String nekoUuid, String alias) {
         ServerPlayer neko = player.getServer().getPlayerList().getPlayer(UUID.fromString(nekoUuid));
         if (neko == null) return;
-        if (!neko.hasOwner(player.getUUID())) return;
-        neko.getOwner(player.getUUID()).getAliases().remove(alias);
+        INeko nekoState = NekoAccess.require(neko);
+        if (!nekoState.hasOwner(player.getUUID())) return;
+        nekoState.getOwner(player.getUUID()).getAliases().remove(alias);
         player.sendSystemMessage(Component.translatable("command.toneko.aliases.remove", alias));
     }
 
     private static void handleGuiAddBlock(ServerPlayer player, String nekoUuid, String block, String replace, String method) {
         ServerPlayer neko = player.getServer().getPlayerList().getPlayer(UUID.fromString(nekoUuid));
         if (neko == null) return;
-        if (!neko.hasOwner(player.getUUID())) return;
+        INeko nekoState = NekoAccess.require(neko);
+        if (!nekoState.hasOwner(player.getUUID())) return;
         INeko.BlockedWord.BlockMethod bm = INeko.BlockedWord.BlockMethod.fromString(method);
         if (bm == null) bm = INeko.BlockedWord.BlockMethod.WORD;
-        neko.addBlockedWord(new INeko.BlockedWord(block, replace, bm));
+        nekoState.addBlockedWord(new INeko.BlockedWord(block, replace, bm));
         player.sendSystemMessage(Component.translatable("messages.toneko.block.add"));
     }
 
     private static void handleGuiRemoveBlock(ServerPlayer player, String nekoUuid, String block) {
         ServerPlayer neko = player.getServer().getPlayerList().getPlayer(UUID.fromString(nekoUuid));
         if (neko == null) return;
-        if (!neko.hasOwner(player.getUUID())) return;
-        neko.removeBlockedWord(block);
+        INeko nekoState = NekoAccess.require(neko);
+        if (!nekoState.hasOwner(player.getUUID())) return;
+        nekoState.removeBlockedWord(block);
         player.sendSystemMessage(Component.translatable("messages.toneko.block.remove"));
     }
 
     private static void handleGuiRemoveOwner(ServerPlayer player, String nekoUuid) {
         ServerPlayer neko = player.getServer().getPlayerList().getPlayer(UUID.fromString(nekoUuid));
         if (neko == null) return;
-        neko.removeOwner(player.getUUID());
+        NekoAccess.require(neko).removeOwner(player.getUUID());
         player.sendSystemMessage(Component.translatable("command.toneko.remove", neko.getName().getString()));
     }
 
