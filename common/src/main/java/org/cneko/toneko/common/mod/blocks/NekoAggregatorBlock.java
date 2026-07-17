@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.recipes.NekoAggregatorInput;
 import org.cneko.toneko.common.mod.recipes.NekoAggregatorRecipe;
 import org.cneko.toneko.common.mod.recipes.ToNekoMenuTypes;
@@ -88,10 +88,10 @@ public class NekoAggregatorBlock extends Block {
                         if (recipeOptional.isPresent()) {
                             NekoAggregatorRecipe recipe = recipeOptional.get();
                             // 检查能量（再次检查以防万一）
-                            if (player.getNekoEnergy() >= recipe.energy) {
+                            if (NekoAccess.getEnergy(player) >= recipe.energy) {
                                 // 消耗原料和能量
                                 consumeInputs(); // 调用消耗方法
-                                player.setNekoEnergy((float) (player.getNekoEnergy() - recipe.energy));
+                                NekoAccess.setEnergy(player, (float) (NekoAccess.getEnergy(player) - recipe.energy));
                                 onInputChanged();
                             }
                         }
@@ -143,7 +143,7 @@ public class NekoAggregatorBlock extends Block {
             if (recipeHolder.isPresent()) {
                 NekoAggregatorRecipe recipe = recipeHolder.get();
                 // 检查能量是否足够
-                if (this.player.getNekoEnergy() >= recipe.energy) {
+                if (NekoAccess.getEnergy(this.player) >= recipe.energy) {
                     // 合成并设置结果
                     ItemStack resultStack = recipe.assemble(recipeInput, level.registryAccess());
                     resultSlot.set(resultStack);
@@ -175,7 +175,7 @@ public class NekoAggregatorBlock extends Block {
                 if (index == 9) {
                     // 1. 检查条件 (这部分是好的，保留)
                     Optional<NekoAggregatorRecipe> recipeOptional = this.findMatchingRecipe(player.level());
-                    if (recipeOptional.isEmpty() || player.getNekoEnergy() < recipeOptional.get().energy) {
+                    if (recipeOptional.isEmpty() || NekoAccess.getEnergy(player) < recipeOptional.get().energy) {
                         return ItemStack.EMPTY; // 如果不满足条件，阻止移动
                     }
 

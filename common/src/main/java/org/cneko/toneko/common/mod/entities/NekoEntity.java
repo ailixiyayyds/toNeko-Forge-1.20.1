@@ -476,8 +476,8 @@ public abstract class NekoEntity extends AgeableMob implements GeoEntity, INeko,
             }
             // 增加互动等级因子
             NekoLevelRegistry.interaction().addRaw(this, 15.0);
-            if (player.isNeko()) {
-                NekoLevelRegistry.interaction().addRaw(player, 15.0);
+            if (NekoAccess.isNeko(player)) {
+                NekoLevelRegistry.interaction().addRaw(NekoAccess.require(player), 15.0);
             }
             return true;
         }else {
@@ -1464,7 +1464,7 @@ public abstract class NekoEntity extends AgeableMob implements GeoEntity, INeko,
     }
 
     public String generateAIPrompt(Player player) {
-        return PromptRegistry.generatePrompt(this,player,ConfigUtil.getAIPrompt());
+        return PromptRegistry.generatePrompt(this, NekoAccess.require(player), ConfigUtil.getAIPrompt());
     }
 
     @Override

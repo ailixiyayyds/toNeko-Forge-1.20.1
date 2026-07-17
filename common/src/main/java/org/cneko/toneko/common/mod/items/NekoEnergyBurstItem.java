@@ -33,6 +33,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.misc.ToNekoDamageTypes;
 import org.cneko.toneko.common.mod.misc.ToNekoEnchantments;
 import org.cneko.toneko.common.mod.util.EnchantmentUtil;
@@ -91,11 +92,11 @@ public class NekoEnergyBurstItem extends Item {
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand usedHand) {
         if (level.isClientSide) return super.use(level, player, usedHand);
-        if (!player.isNeko()){
+        if (!NekoAccess.isNeko(player)){
             player.displayClientMessage(Component.translatable(getBroadcastKeyPrefix() + ".not_neko"),true);
             return InteractionResultHolder.fail(player.getItemInHand(usedHand));
         }
-        if (player.getNekoEnergy() < energyCost){
+        if (NekoAccess.getEnergy(player) < energyCost){
             player.displayClientMessage(Component.translatable(getBroadcastKeyPrefix() + ".not_enough_energy"),true);
             return InteractionResultHolder.fail(player.getItemInHand(usedHand));
         }
@@ -144,12 +145,12 @@ public class NekoEnergyBurstItem extends Item {
         }
 
         // ---- 计算最终数值（基础×等级×连击×附魔） ----
-        float finalDamage = (damage + damage * player.getNekoLevel() * 0.02f) * comboMultiplier * enchDamageMult;
-        float finalRadius = (radius + player.getNekoLevel() * 0.02f) * comboMultiplier * enchRadiusMult;
+        float finalDamage = (damage + damage * NekoAccess.getLevel(player) * 0.02f) * comboMultiplier * enchDamageMult;
+        float finalRadius = (radius + NekoAccess.getLevel(player) * 0.02f) * comboMultiplier * enchRadiusMult;
 
         // 扣除能量（附魔减免后）
         float actualEnergyCost = energyCost * enchEnergyMult;
-        player.setNekoEnergy(player.getNekoEnergy() - actualEnergyCost);
+        NekoAccess.setEnergy(player, NekoAccess.getEnergy(player) - actualEnergyCost);
 
         // ---- 音效 ----
         playHissSound(level, player, effectiveCombo, isEasterEgg);
