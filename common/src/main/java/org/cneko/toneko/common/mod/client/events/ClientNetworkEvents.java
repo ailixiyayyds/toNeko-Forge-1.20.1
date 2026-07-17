@@ -19,6 +19,7 @@ import org.cneko.toneko.common.mod.packets.*;
 import org.cneko.toneko.common.mod.packets.interactives.ChatHistoryResponsePayload;
 import org.cneko.toneko.common.mod.packets.interactives.NekoEntityInteractivePayload;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.cneko.toneko.common.mod.misc.mixininterface.PlayerLeashAccess;
 import org.cneko.toneko.common.util.AIUtil;
 import org.cneko.toneko.common.util.ConfigUtil;
@@ -74,8 +75,8 @@ public class ClientNetworkEvents {
             if (player == null) {
                 return;
             }
-            player.setNekoEnergy(payload.energy());
-            org.cneko.toneko.common.mod.entities.INeko neko = (org.cneko.toneko.common.mod.entities.INeko) player;
+            NekoAccess.setEnergy(player, payload.energy());
+            org.cneko.toneko.common.mod.entities.INeko neko = NekoAccess.require(player);
             neko.setNeko(payload.isNeko());
             neko.setNekoLevelFactorRaw("interaction", payload.interactionRaw());
             neko.setNekoLevelFactorRaw("combat", payload.combatRaw());

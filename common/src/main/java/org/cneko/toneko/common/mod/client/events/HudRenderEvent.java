@@ -17,6 +17,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import org.cneko.toneko.common.mod.client.ToNekoKeyBindings;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
+import org.cneko.toneko.common.mod.entities.NekoAccess;
 import org.joml.Matrix4f;
 
 import java.io.IOException;
@@ -150,8 +151,8 @@ public class HudRenderEvent {
 
         Player player = client.player;
 
-        float nekoEnergy = player.getNekoEnergy();
-        float maxNekoEnergy = player.getMaxNekoEnergy();
+        float nekoEnergy = NekoAccess.getEnergy(player);
+        float maxNekoEnergy = NekoAccess.getMaxEnergy(player);
 
         // 如果能量是满的，则隐藏
         if (nekoEnergy >= maxNekoEnergy) return;

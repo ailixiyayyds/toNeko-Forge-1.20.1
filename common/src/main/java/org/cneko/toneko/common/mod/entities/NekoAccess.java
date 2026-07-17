@@ -37,6 +37,11 @@ public final class NekoAccess {
         return neko == null ? 0.0F : neko.getNekoLevel();
     }
 
+    public static float getMaxEnergy(@Nullable Entity entity) {
+        INeko neko = find(entity);
+        return neko == null ? 0.0F : neko.getMaxNekoEnergy();
+    }
+
     public static INeko require(Entity entity) {
         INeko neko = find(entity);
         if (neko == null) {
