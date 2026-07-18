@@ -27,6 +27,7 @@ toNeko 是一个将你变成猫娘的 Minecraft 模组喵！除了变成猫娘�
 ## 前置mod
 - [geckolib](https://modrinth.com/mod/geckolib)（必装）
 - [Forgified Fabric API](https://modrinth.com/mod/forgified-fabric-api)（仅 NeoForge 需要）
+- [Architectury API](https://modrinth.com/mod/architectury-api)（Forge 1.20.1 降级版必装，最低 9.2.14）
 
 可选前置：
 - [trinkets](https://modrinth.com/mod/trinkets)（提供饰品栏位支持）
