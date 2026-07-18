@@ -27,7 +27,11 @@ public class CommonChatEvent {
     private static final double NEKO_AI_RANGE = 16.0;
 
     public static void onChatMessage(PlayerChatMessage message, ServerPlayer sender, ChatType.Bound params) {
-        String originalContent = message.decoratedContent().getString();
+        onChatMessage(message.decoratedContent().getString(), sender);
+    }
+
+    /** Loader-neutral entry used by Forge's ServerChatEvent. */
+    public static void onChatMessage(String originalContent, ServerPlayer sender) {
         String playerName = TextUtil.getPlayerName(sender);
         INeko senderNeko = NekoAccess.require(sender);
 

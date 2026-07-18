@@ -50,6 +50,10 @@ mod, uses ForgeGradle and does not use Connector.
 * Integrated-world persistence tests verified `isNeko`, energy `321.5`, the
   `PersistTest` nickname and the `caress` quirk after both reconnect and player
   death/respawn cloning.
+* Commands now register through Forge's `RegisterCommandsEvent`. Server start,
+  data reload, login/logout, server and level ticks, block/entity interactions,
+  attacks, damage/death, sleep/wake, villager trades, weather transitions and
+  formatted chat are connected through the native Forge event bus.
 
 ## Current runnable boundary
 

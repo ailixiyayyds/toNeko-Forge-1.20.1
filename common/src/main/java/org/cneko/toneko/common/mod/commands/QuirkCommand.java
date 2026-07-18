@@ -1,5 +1,6 @@
 package org.cneko.toneko.common.mod.commands;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -27,7 +28,11 @@ import static net.minecraft.commands.Commands.literal;
 import static org.cneko.toneko.common.mod.util.TextUtil.translatable;
 public class QuirkCommand {
     public static void init(){
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("quirk")
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> register(dispatcher));
+    }
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(literal("quirk")
                 .requires(source -> PermissionUtil.has(source,Permissions.COMMAND_QUIRK) && source.isPlayer())
                 .then(literal("help")
                         .requires(source -> PermissionUtil.has(source,Permissions.COMMAND_QUIRK_HELP))
@@ -56,7 +61,7 @@ public class QuirkCommand {
                         .executes(QuirkCommand::quirkGui)
                 )
                 .executes(QuirkCommand::quirkGui)
-        ));
+        );
     }
 
     public static int quirkGui(CommandContext<CommandSourceStack> context) {

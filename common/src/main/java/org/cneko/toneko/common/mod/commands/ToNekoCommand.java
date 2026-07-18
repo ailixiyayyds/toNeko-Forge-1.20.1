@@ -1,5 +1,6 @@
 package org.cneko.toneko.common.mod.commands;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -40,7 +41,10 @@ import static org.cneko.toneko.common.mod.util.TextUtil.translatable;
 import static org.cneko.toneko.common.mod.util.PermissionUtil.has;
 public class ToNekoCommand {
     public static void init(){
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> register(dispatcher));
+    }
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
             //------------------------------------------------toneko-----------------------------------------------
             dispatcher.register(literal("toneko")
@@ -144,8 +148,7 @@ public class ToNekoCommand {
 
                     //----------------------------------------无参数-----------------------------------------
                     .executes(ToNekoCommand::help)
-            );
-        });
+        );
     }
 
     public static int playerCommand(CommandContext<CommandSourceStack> context) {

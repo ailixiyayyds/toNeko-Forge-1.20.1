@@ -1,5 +1,6 @@
 package org.cneko.toneko.common.mod.commands;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -46,8 +47,11 @@ import static org.cneko.toneko.common.mod.util.TextUtil.translatable;
 
 public class NekoCommand {
     public static void init(){
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(literal("neko")
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> register(dispatcher));
+    }
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(literal("neko")
                     .requires(CommandSourceStack::isPlayer)
                     .then(literal("help")
                             .requires(source -> PermissionUtil.has(source, Permissions.COMMAND_NEKO_HELP))
@@ -111,8 +115,7 @@ public class NekoCommand {
                                     .executes(NekoCommand::chatCommand)
                             )
                     )
-            );
-        });
+        );
     }
 
     private static int removeNicknameCommand(CommandContext<CommandSourceStack> context) {

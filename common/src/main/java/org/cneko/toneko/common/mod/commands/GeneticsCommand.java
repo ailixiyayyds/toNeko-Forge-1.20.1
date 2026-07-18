@@ -16,8 +16,11 @@ import org.cneko.toneko.common.mod.util.PermissionUtil;
 
 public class GeneticsCommand {
     public static void init() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(Commands.literal("genetics")
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> register(dispatcher));
+    }
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("genetics")
                     .requires(s -> PermissionUtil.has(s, Permissions.COMMAND_GENETICS))
                     .then(Commands.argument("target", EntityArgument.entity())
                                     .executes(context -> {
@@ -39,8 +42,6 @@ public class GeneticsCommand {
                                     })
                             )
 
-            );
-        });
-
+        );
     }
 }

@@ -1,5 +1,6 @@
 package org.cneko.toneko.common.mod.commands;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -37,9 +38,12 @@ public class ToNekoAdminCommand {
         return builder.buildFuture();
     };
     public static void init(){
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            //------------------------------------------------toneko-----------------------------------------------
-            dispatcher.register(literal("tonekoadmin")
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> register(dispatcher));
+    }
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        //------------------------------------------------toneko-----------------------------------------------
+        dispatcher.register(literal("tonekoadmin")
                     .requires(source -> PermissionUtil.has(source, Permissions.COMMAND_TONEKOADMIN))
                     .then(literal("set")
                             .requires(source -> PermissionUtil.has(source, Permissions.COMMAND_TONEKOADMIN_SET))
@@ -153,8 +157,7 @@ public class ToNekoAdminCommand {
                             .requires(source -> PermissionUtil.has(source, Permissions.COMMAND_TONEKOADMIN_HELP))
                             .executes(ToNekoAdminCommand::help)
                     )
-            );
-        });
+        );
     }
 
     private static int setLevel(CommandContext<CommandSourceStack> context) {
