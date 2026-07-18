@@ -14,15 +14,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.cneko.toneko.common.Bootstrap.LOGGER;
 
 public class AIUtil {
-    private static final ExecutorService executor = Executors.newFixedThreadPool(100, r -> {
-        Thread thread = new Thread(r);
+    private static final AtomicInteger AI_THREAD_ID = new AtomicInteger();
+    private static final ExecutorService executor = Executors.newFixedThreadPool(
+            Math.max(2, Math.min(4, Runtime.getRuntime().availableProcessors())), r -> {
+        Thread thread = new Thread(r, "toNeko-AI-" + AI_THREAD_ID.incrementAndGet());
         thread.setDaemon(true); // 将线程设为守护线程
         return thread;
     });
+    private static final ScheduledExecutorService timeoutExecutor =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread thread = new Thread(r, "toNeko-AI-timeout");
+                thread.setDaemon(true);
+                return thread;
+            });
     private static final int MAX_MESSAGE_COUNT = 30;
     private static final int REQUEST_TIMEOUT = 60;
 
@@ -112,7 +122,13 @@ public class AIUtil {
     public static void sendMessage(UUID uuid, UUID userUuid, String prompt, String message, MessageCallback callback){
         final boolean debug = ConfigUtil.isAIDebugEnabled();
         final long startTime = System.currentTimeMillis();
-        final String msgSnippet = message.length() > 80 ? message.substring(0, 80) + "..." : message;
+        final String requestMessage = message == null ? "" : message.trim();
+        final String msgSnippet = requestMessage.length() > 80
+                ? requestMessage.substring(0, 80) + "..." : requestMessage;
+        final AtomicBoolean callbackSent = new AtomicBoolean(false);
+        java.util.function.Consumer<AIResponse> complete = response -> {
+            if (callbackSent.compareAndSet(false, true)) callback.execute(response);
+        };
 
         var future = executor.submit(()->{
             try{
@@ -121,14 +137,14 @@ public class AIUtil {
 
                 if (providerId == null) {
                     LOGGER.warn("Unsupported AI service: {}, please read the docs: https://s.cneko.org/toNekoAI", rawService);
-                    callback.execute(new AIResponse("Unsupported AI service: " + rawService + ", please read the docs: https://s.cneko.org/toNekoAI", 400));
+                    complete.accept(new AIResponse("Unsupported AI service: " + rawService + ", please read the docs: https://s.cneko.org/toNekoAI", 400));
                     return;
                 }
 
                 AIServiceProvider provider = AIServiceProviderRegistry.get(providerId);
                 if (provider == null) {
                     LOGGER.warn("AI provider not found: {}", providerId);
-                    callback.execute(new AIResponse("AI provider not found: " + providerId, 400));
+                    complete.accept(new AIResponse("AI provider not found: " + providerId, 400));
                     return;
                 }
 
@@ -175,7 +191,7 @@ public class AIUtil {
                 String userUuidStr = userUuid.toString();
 
                 AIHistory history = FileStorageUtil.readConversation(uuidStr, userUuidStr);
-                AIRequest request = new AIRequest(message, uuidStr, userUuidStr, prompt, history);
+                AIRequest request = new AIRequest(requestMessage, uuidStr, userUuidStr, prompt, history);
 
                 AIResponse response = provider.processRequest(serviceConfig, request);
 
@@ -199,10 +215,10 @@ public class AIUtil {
                                 response.getResponse() != null ? response.getResponse().length() : 0,
                                 respPreview);
                     }
-                    callback.execute(response);
+                    complete.accept(response);
                 } else {
                     LOGGER.warn("[AI-DEBUG] <<< NULL | provider={} time={}ms - AI provider returned null response", providerId, elapsed);
-                    callback.execute(new AIResponse("AI service returned no response.", 500));
+                    complete.accept(new AIResponse("AI service returned no response.", 500));
                 }
             }catch (Exception e){
                 long elapsed = System.currentTimeMillis() - startTime;
@@ -210,21 +226,18 @@ public class AIUtil {
                 if (debug) {
                     LOGGER.error("[AI-DEBUG] Exception details:", e);
                 }
-                callback.execute(new AIResponse("AI request failed: " + e.getMessage(), 500));
+                complete.accept(new AIResponse("AI request failed: " + e.getMessage(), 500));
             }
         });
 
         // 设置超时机制
-        executor.submit(() -> {
-            try {
-                future.get(REQUEST_TIMEOUT, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
+        timeoutExecutor.schedule(() -> {
+            if (!future.isDone() && callbackSent.compareAndSet(false, true)) {
                 future.cancel(true);
                 LOGGER.warn("[AI-DEBUG] <<< TIMEOUT | exceeded {}s for msg=\"{}\"", REQUEST_TIMEOUT, msgSnippet);
-            } catch (Exception e) {
-                LOGGER.error("Unexpected error during message sending task.", e);
+                callback.execute(new AIResponse("AI request timed out after " + REQUEST_TIMEOUT + " seconds.", 504));
             }
-        });
+        }, REQUEST_TIMEOUT, TimeUnit.SECONDS);
     }
 
 
@@ -262,16 +275,12 @@ public class AIUtil {
         });
 
         // 设置超时机制
-        executor.submit(() -> {
-            try {
-                future.get(REQUEST_TIMEOUT, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
+        timeoutExecutor.schedule(() -> {
+            if (!future.isDone()) {
                 future.cancel(true);
                 LOGGER.warn("TTS sending task timed out and was cancelled.");
-            } catch (Exception e) {
-                LOGGER.error("Unexpected error during message sending task.", e);
             }
-        });
+        }, REQUEST_TIMEOUT, TimeUnit.SECONDS);
     }
 
     private static class ElefantTTSRequestBody{

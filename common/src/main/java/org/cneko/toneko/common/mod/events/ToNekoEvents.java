@@ -36,7 +36,11 @@ import org.cneko.toneko.common.util.ConfigUtil;
 import org.cneko.toneko.common.util.LanguageUtil;
 
 public class ToNekoEvents {
-    public static void init() {
+    private static boolean initialized;
+
+    public static synchronized void init() {
+        if (initialized) return;
+        initialized = true;
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register((message, sender, params) -> {
             if (ConfigUtil.isChatEnable()) {
                 CommonChatEvent.onChatMessage(message, sender, params);

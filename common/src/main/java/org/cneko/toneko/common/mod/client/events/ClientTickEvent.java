@@ -33,6 +33,7 @@ public class ClientTickEvent {
     }
 
     public static void processKeyInput(Minecraft client) {
+        if (client.player == null) return;
         while (ToNekoKeyBindings.LIE_KEY.consumeClick()) {
             client.player.connection.sendUnsignedCommand("neko lie");
         }
@@ -80,7 +81,7 @@ public class ClientTickEvent {
         }
     }
 
-    private static void openChatWithNearestNeko(Minecraft client) {
+    public static void openChatWithNearestNeko(Minecraft client) {
         if (client.player == null || client.level == null) return;
 
         // Try to find a neko the player is looking at

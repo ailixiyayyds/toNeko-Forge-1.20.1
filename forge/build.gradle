@@ -119,6 +119,11 @@ dependencies {
     }
     implementation 'com.github.CSneko:NekoAI:v0.1.3-alpha'
     implementation 'com.github.umjammer:jlayer:1.0.3'
+    // ForgeGradle's userdev module layer does not expose ordinary Java
+    // implementation dependencies to Minecraft. minecraftLibrary adds these
+    // libraries to runClient/runServer as real game runtime libraries.
+    minecraftLibrary 'com.github.CSneko:NekoAI:v0.1.3-alpha'
+    minecraftLibrary 'com.github.umjammer:jlayer:1.0.3'
     embeddedRuntime('com.github.CSneko:NekoAI:v0.1.3-alpha') { transitive = false }
     embeddedRuntime('com.github.umjammer:jlayer:1.0.3') { transitive = false }
     compileOnly 'io.netty:netty-codec-http:4.1.117.Final'

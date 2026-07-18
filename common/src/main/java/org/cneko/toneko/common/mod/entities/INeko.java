@@ -171,14 +171,14 @@ public interface INeko {
     }
     default void fixQuirks(){
         // 修复quirks
-        this.getQuirks().removeIf(quirk -> QuirkRegister.hasQuirk(quirk.getId()));
+        this.getQuirks().removeIf(quirk -> quirk == null || !QuirkRegister.hasQuirk(quirk.getId()));
     }
 
 
     default void saveNekoNBTData(@NotNull CompoundTag nbt){
         nbt.putBoolean("IsNeko", this.isNeko());
-        nbt.putDouble("NekoEnergy", this.getNekoEnergy());
-        nbt.put("NekoLevelFactors", this.getNekoLevelFactorData());
+        nbt.putFloat("NekoEnergy", this.getNekoEnergy());
+        nbt.put("NekoLevelFactors", this.getNekoLevelFactorData().copy());
         CompoundTag owners = new CompoundTag();
         this.getOwners().forEach((uuid, owner) -> {
             CompoundTag ownerInfo = new CompoundTag();
@@ -194,6 +194,25 @@ public interface INeko {
         nbt.putInt("NekoAge", this.getNekoAge());
         nbt.putString("NickName", this.getNickName());
         nbt.put("Owners", owners);
+
+        ListTag blockedWords = new ListTag();
+        for (BlockedWord word : this.getBlockedWords()) {
+            if (word == null || word.method() == null) continue;
+            CompoundTag wordTag = new CompoundTag();
+            wordTag.putString("Block", word.block());
+            wordTag.putString("Replace", word.replace());
+            wordTag.putString("Method", word.method().getMethod());
+            blockedWords.add(wordTag);
+        }
+        nbt.put("BlockedWords", blockedWords);
+
+        ListTag quirks = new ListTag();
+        for (Quirk quirk : this.getQuirks()) {
+            if (quirk != null && QuirkRegister.hasQuirk(quirk.getId())) {
+                quirks.add(StringTag.valueOf(quirk.getId()));
+            }
+        }
+        nbt.put("Quirks", quirks);
     }
     default void loadNekoNBTData(@NotNull CompoundTag nbt){
         if(nbt.contains("IsNeko")){
@@ -213,28 +232,52 @@ public interface INeko {
             migrated.putDouble("base", nbt.getFloat("NekoLevel"));
             this.setNekoLevelFactorData(migrated);
         }
-        if (nbt.contains("Owners")){
+        this.getOwners().clear();
+        if (nbt.contains("Owners", Tag.TAG_COMPOUND)){
             CompoundTag owners = nbt.getCompound("Owners");
             for (String key : owners.getAllKeys()){
                 CompoundTag ownerInfo = owners.getCompound(key);
-                List<String> aliases;
-                int xp;
-                if (ownerInfo.contains("Aliases")) {
-                    aliases = ownerInfo.getList("Aliases", ListTag.TAG_STRING).stream().map(Tag::toString).toList();
-                }else {
-                    aliases = new ArrayList<>();
+                List<String> aliases = new ArrayList<>();
+                ListTag aliasTags = ownerInfo.getList("Aliases", Tag.TAG_STRING);
+                for (int i = 0; i < aliasTags.size(); i++) {
+                    aliases.add(aliasTags.getString(i));
                 }
-                if (ownerInfo.contains("Xp")){
-                    xp = ownerInfo.getInt("Xp");
-                }else {
-                    xp = 0;
+                try {
+                    this.addOwner(UUID.fromString(key), new Owner(aliases, ownerInfo.getInt("Xp")));
+                } catch (IllegalArgumentException ignored) {
+                    // Ignore a malformed legacy owner key and retain all valid entries.
                 }
-                this.addOwner(UUID.fromString(key), new Owner(aliases, xp));
             }
         }
-        if (nbt.contains("NickName")){
-            this.setNickName(this.getNickName());
+        if (nbt.contains("NickName", Tag.TAG_STRING)){
+            this.setNickName(nbt.getString("NickName"));
         }
+
+        this.getBlockedWords().clear();
+        ListTag blockedWords = nbt.getList("BlockedWords", Tag.TAG_COMPOUND);
+        for (int i = 0; i < blockedWords.size(); i++) {
+            CompoundTag wordTag = blockedWords.getCompound(i);
+            BlockedWord.BlockMethod method = BlockedWord.BlockMethod.fromString(wordTag.getString("Method"));
+            if (method == null) method = BlockedWord.BlockMethod.WORD;
+            this.addBlockedWord(new BlockedWord(
+                    wordTag.getString("Block"),
+                    wordTag.getString("Replace"),
+                    method
+            ));
+        }
+
+        this.getQuirks().clear();
+        ListTag quirks = nbt.getList("Quirks", Tag.TAG_STRING);
+        for (int i = 0; i < quirks.size(); i++) {
+            Quirk quirk = QuirkRegister.getById(quirks.getString(i));
+            if (quirk != null) this.addQuirk(quirk);
+        }
+    }
+
+    default void copyNekoStateFrom(@NotNull INeko source) {
+        CompoundTag state = new CompoundTag();
+        source.saveNekoNBTData(state);
+        this.loadNekoNBTData(state);
     }
 
     ResourceLocation ATTACK_MODIFIER_ID = toNekoLoc("neko_level_attack_modifier");

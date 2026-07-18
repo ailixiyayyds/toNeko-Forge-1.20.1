@@ -29,13 +29,34 @@ mod, uses ForgeGradle and does not use Connector.
 * Player state calls in the migrated GUI, items, commands, events, networking,
   AI goals and respawn-copy path now go through `NekoAccess` instead of relying
   on compile-time interface injection.
+* Player Neko state has a Forge capability compatibility surface and a native
+  `PlayerEvent.Clone` copy path. NBT now round-trips nickname, owners and clean
+  aliases, energy, level factors, blocked words and quirks across reconnects.
+* The AI configuration screen supports provider-specific keys, models and
+  custom OpenAI-compatible base URLs. Chat work is bounded to four daemon
+  workers, has a non-blocking 60-second timeout and always returns callbacks to
+  the Minecraft server thread before touching entities or networking.
+* Forge now registers every toNeko key mapping through
+  `RegisterKeyMappingsEvent` and runs client tasks/key input through a native
+  Forge client-tick subscriber. The `[`, `U` and centre-menu actions were
+  verified in an integrated world.
+* The centre menu exposes both Neko chat and settings. The settings path reaches
+  the provider-specific AI screen, including the Custom (OpenAI-compatible)
+  provider and its API key, model and base-URL fields.
+* NekoAI and JLayer are both embedded in the release JAR and declared as
+  ForgeGradle `minecraftLibrary` dependencies for development/client/server
+  runs. Chat-history loading and an AI-disabled message were verified without
+  a disconnect or class-loading error.
+* Integrated-world persistence tests verified `isNeko`, energy `321.5`, the
+  `PersistTest` nickname and the `caress` quirk after both reconnect and player
+  death/respawn cloning.
 
 ## Current runnable boundary
 
 The generated JAR is a gameplay-test milestone, not yet a release candidate.
-It still uses Forgified Fabric API for unported callbacks. Fighting/armed Neko
-rendering, AI chat configuration, persistence across death/reconnect and a
-clean external-modpack launch still require focused gameplay tests.
+It still uses Forgified Fabric API for unported callbacks. A clean
+external-modpack launch and the remaining native Forge callback replacements
+still require focused work.
 The dedicated-server launch reaches Forge's server environment and selects the
 toNeko Mixins without a client-class crash, then stops at the untouched Mojang
 EULA gate. A complete dedicated-world test still requires the server owner to
@@ -43,15 +64,11 @@ accept that EULA.
 
 ## Next implementation order
 
-1. Add a Forge-owned player data API (capability/attachment wrapper), then port
-   player persistence, sync and scale/energy attributes to Forge
-   events and networking. Keep the public `INeko` contract as the compatibility
-   surface for JustARod.
-2. Replace Fabric command, lifecycle, interaction and resource callbacks with
+1. Replace Fabric command, lifecycle, interaction and resource callbacks with
    Forge event-bus registrations; remove the corresponding bridge use as each
    area is ported.
-3. Run focused armed-Neko, AI-chat, death/reconnect and dedicated-server smoke
-   tests, then link
+2. Run a clean external-modpack smoke test and complete the dedicated-server
+   smoke test after the server owner accepts Mojang's EULA, then link
    JustARod Forge only to the produced Forge JAR. JustARod must never depend on
    the Fabric backport JAR.
 

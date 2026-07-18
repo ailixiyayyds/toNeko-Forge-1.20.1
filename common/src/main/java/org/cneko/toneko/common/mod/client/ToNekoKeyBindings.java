@@ -5,7 +5,9 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import org.lwjgl.glfw.GLFW;
 
-public class ToNekoKeyBindings {
+import java.util.List;
+
+public final class ToNekoKeyBindings {
     public static KeyMapping LIE_KEY;
     public static KeyMapping GET_DOWN_KEY;
     public static KeyMapping RIDE_KEY;
@@ -21,118 +23,68 @@ public class ToNekoKeyBindings {
     public static KeyMapping HUB_KEY;
     public static KeyMapping CHAT_WITH_NEKO_KEY;
 
-    public static void init(){
-        LIE_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.lie", // The translation key of the keybinding's name
-                        InputConstants.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
-                        GLFW.GLFW_KEY_I, // The keycode of the key
-                        "key.toneko.lie.category" // The translation key of the keybinding's category.
-                )
+    private static final String CATEGORY = "key.toneko.lie.category";
+    private static boolean created;
+    private static boolean fabricRegistered;
+
+    private ToNekoKeyBindings() {
+    }
+
+    /** Creates the mappings without registering them to a loader event. */
+    public static synchronized void createMappings() {
+        if (created) return;
+        created = true;
+
+        LIE_KEY = mapping("key.toneko.lie", GLFW.GLFW_KEY_I);
+        GET_DOWN_KEY = mapping("key.toneko.get_down", GLFW.GLFW_KEY_O);
+        RIDE_KEY = mapping("key.toneko.ride", GLFW.GLFW_KEY_K);
+        QUIRK_KEY = mapping("key.toneko.quirk", GLFW.GLFW_KEY_J);
+        SPEED_KEY = mapping("key.toneko.speed", GLFW.GLFW_KEY_UNKNOWN);
+        JUMP_KEY = mapping("key.toneko.jump", GLFW.GLFW_KEY_UNKNOWN);
+        VISION_KEY = mapping("key.toneko.vision", GLFW.GLFW_KEY_UNKNOWN);
+        RIDE_HEAD_KEY = mapping("key.toneko.ride_head", GLFW.GLFW_KEY_UNKNOWN);
+        ROULETTE_KEY = mapping("key.toneko.roulette", GLFW.GLFW_KEY_Z);
+        NEKO_INFO_KEY = mapping("key.toneko.neko_info", GLFW.GLFW_KEY_U);
+        DISMOUNT_PASSENGER_KEY = mapping("key.toneko.dismount_passenger", GLFW.GLFW_KEY_G);
+        TONEKO_MANAGEMENT_KEY = mapping("key.toneko.management", GLFW.GLFW_KEY_UNKNOWN);
+        HUB_KEY = mapping("key.toneko.hub", GLFW.GLFW_KEY_LEFT_BRACKET);
+        CHAT_WITH_NEKO_KEY = mapping("key.toneko.chat_with_neko", GLFW.GLFW_KEY_UNKNOWN);
+    }
+
+    /** Fabric entry point retained for the original loader module. */
+    public static synchronized void init() {
+        createMappings();
+        if (fabricRegistered) return;
+        fabricRegistered = true;
+        allMappings().forEach(KeyBindingHelper::registerKeyBinding);
+    }
+
+    public static List<KeyMapping> allMappings() {
+        createMappings();
+        return List.of(
+                LIE_KEY,
+                GET_DOWN_KEY,
+                RIDE_KEY,
+                QUIRK_KEY,
+                SPEED_KEY,
+                JUMP_KEY,
+                VISION_KEY,
+                RIDE_HEAD_KEY,
+                ROULETTE_KEY,
+                NEKO_INFO_KEY,
+                DISMOUNT_PASSENGER_KEY,
+                TONEKO_MANAGEMENT_KEY,
+                HUB_KEY,
+                CHAT_WITH_NEKO_KEY
         );
-        GET_DOWN_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.get_down", // The translation key of the keybinding's name
-                        InputConstants.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
-                        GLFW.GLFW_KEY_O, // The keycode of the key
-                        "key.toneko.lie.category" // The translation key of the keybinding's category.)
-                )
-        );
-        RIDE_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.ride", // The translation key of the keybinding's name
-                        InputConstants.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
-                        GLFW.GLFW_KEY_K, // The keycode of the key
-                        "key.toneko.lie.category" // The translation key of the keybinding's category.)
-                )
-        );
-        QUIRK_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.quirk", // The translation key of the keybinding's name
-                        InputConstants.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
-                        GLFW.GLFW_KEY_J, // The keycode of the key
-                        "key.toneko.lie.category" // The translation key of the keybinding's category.)
-                )
-        );
-        SPEED_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.speed",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_UNKNOWN,
-                        "key.toneko.lie.category"
-                )
-        );
-        JUMP_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.jump",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_UNKNOWN,
-                        "key.toneko.lie.category"
-                )
-        );
-        VISION_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.vision",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_UNKNOWN,
-                        "key.toneko.lie.category"
-                )
-        );
-        RIDE_HEAD_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.ride_head",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_UNKNOWN,
-                        "key.toneko.lie.category"
-                )
-        );
-        ROULETTE_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.roulette",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_Z,
-                        "key.toneko.lie.category"
-                )
-        );
-        NEKO_INFO_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.neko_info",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_U,
-                        "key.toneko.lie.category"
-                )
-        );
-        DISMOUNT_PASSENGER_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.dismount_passenger",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_G,
-                        "key.toneko.lie.category"
-                )
-        );
-        TONEKO_MANAGEMENT_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.management",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_UNKNOWN,
-                        "key.toneko.lie.category"
-                )
-        );
-        HUB_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.hub",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_LEFT_BRACKET,
-                        "key.toneko.lie.category"
-                )
-        );
-        CHAT_WITH_NEKO_KEY = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping(
-                        "key.toneko.chat_with_neko",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_UNKNOWN,
-                        "key.toneko.lie.category"
-                )
+    }
+
+    private static KeyMapping mapping(String translationKey, int keyCode) {
+        return new KeyMapping(
+                translationKey,
+                InputConstants.Type.KEYSYM,
+                keyCode,
+                CATEGORY
         );
     }
 }

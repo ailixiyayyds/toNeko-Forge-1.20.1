@@ -5,6 +5,7 @@ import org.cneko.toneko.common.mod.ai.AIServiceConfig;
 import org.cneko.toneko.common.mod.ai.provider.AIServiceProvider;
 import org.cneko.toneko.common.mod.ai.provider.AIServiceProviderRegistry;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.time.LocalDate;
 
@@ -342,7 +343,8 @@ public class ConfigUtil {
             String baseUrl = getAIProviderBaseUrl(providerId);
             if (baseUrl == null || baseUrl.isEmpty()) baseUrl = getAIBaseUrl();
             if (baseUrl != null && !baseUrl.isEmpty()) {
-                parseAndApplyBaseUrl(builder, baseUrl);
+                parseAndApplyBaseUrl(builder, baseUrl,
+                        provider.getDefaultEndpoint(), provider.isDefaultTls());
             } else {
                 // Store defaults on AIServiceConfig for debug/logging, but
                 // the provider won't forward them to OpenAIConfig unless overridden.
@@ -370,25 +372,27 @@ public class ConfigUtil {
         return builder.build();
     }
 
-    private static void parseAndApplyBaseUrl(AIServiceConfig.Builder builder, String url) {
-        boolean tls = true;
-        if (url.startsWith("http://")) {
-            url = url.substring("http://".length());
-            tls = false;
-        } else if (url.startsWith("https://")) {
-            url = url.substring("https://".length());
+    private static void parseAndApplyBaseUrl(AIServiceConfig.Builder builder, String url,
+                                             String defaultEndpoint, boolean defaultTls) {
+        String normalized = url == null ? "" : url.trim();
+        if (!normalized.contains("://")) {
+            normalized = (defaultTls ? "https://" : "http://") + normalized;
         }
-        String[] parts = url.split("/", 2);
-        String hostPort = parts[0];
-        String endpoint = parts.length > 1 ? "/" + parts[1] : "/";
-        int colonIdx = hostPort.indexOf(':');
-        if (colonIdx != -1) {
-            builder.host(hostPort.substring(0, colonIdx));
-            builder.port(Integer.parseInt(hostPort.substring(colonIdx + 1)));
-        } else {
-            builder.host(hostPort);
-            builder.port(tls ? 443 : 80);
+
+        URI uri = URI.create(normalized);
+        if (uri.getHost() == null || uri.getHost().isBlank()) {
+            throw new IllegalArgumentException("Invalid AI base URL: " + url);
         }
+
+        boolean tls = "https".equalsIgnoreCase(uri.getScheme());
+        int port = uri.getPort() >= 0 ? uri.getPort() : (tls ? 443 : 80);
+        String endpoint = uri.getRawPath();
+        if (endpoint == null || endpoint.isBlank() || "/".equals(endpoint)) {
+            endpoint = defaultEndpoint;
+        }
+
+        builder.host(uri.getHost());
+        builder.port(port);
         builder.endpoint(endpoint);
         builder.tls(tls);
     }

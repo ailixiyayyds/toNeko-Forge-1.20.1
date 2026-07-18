@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.components.Button;
+import org.cneko.toneko.common.mod.client.events.ClientTickEvent;
 
 import static org.cneko.toneko.common.mod.util.TextUtil.translatable;
 
@@ -16,10 +17,11 @@ public class ToNekoHubScreen extends Screen {
     // Layout Y positions
     private static final int TITLE_Y = 15;
     private static final int SECTION1_HEADER_Y = 40;
-    private static final int SECTION1_BUTTONS_Y = 58;
-    private static final int SECTION2_HEADER_Y = 100;
-    private static final int SECTION2_ROW1_Y = 118;
-    private static final int SECTION2_ROW2_Y = 143;
+    private static final int SECTION1_BUTTONS_Y = 52;
+    private static final int SECTION1_BUTTONS_ROW2_Y = 77;
+    private static final int SECTION2_HEADER_Y = 108;
+    private static final int SECTION2_ROW1_Y = 126;
+    private static final int SECTION2_ROW2_Y = 151;
 
     // Colors (matching NekoInfoScreen style)
     private static final int TITLE_COLOR = 0xFFFFFF;
@@ -39,7 +41,7 @@ public class ToNekoHubScreen extends Screen {
         int cx = this.width / 2;
 
         // === Screens ===
-        int screensStartX = centerRowStart(4);
+        int screensStartX = centerRowStart(3);
         addButton(screensStartX, SECTION1_BUTTONS_Y, 0,
                 translatable("screen.toneko.hub.neko_info"),
                 btn -> NekoInfoScreen.open());
@@ -49,9 +51,16 @@ public class ToNekoHubScreen extends Screen {
         addButton(screensStartX, SECTION1_BUTTONS_Y, 2,
                 translatable("screen.toneko.hub.quirks"),
                 btn -> sendCommand("quirk gui"));
-        addButton(screensStartX, SECTION1_BUTTONS_Y, 3,
+        int screensRow2X = centerRowStart(3);
+        addButton(screensRow2X, SECTION1_BUTTONS_ROW2_Y, 0,
                 translatable("screen.toneko.hub.roulette"),
                 btn -> RouletteScreen.open());
+        addButton(screensRow2X, SECTION1_BUTTONS_ROW2_Y, 1,
+                translatable("screen.toneko.hub.chat"),
+                btn -> ClientTickEvent.openChatWithNearestNeko(Minecraft.getInstance()));
+        addButton(screensRow2X, SECTION1_BUTTONS_ROW2_Y, 2,
+                translatable("screen.toneko.hub.config"),
+                btn -> Minecraft.getInstance().setScreen(new ConfigScreen(this)));
 
         // === Quick Actions (row 1: 3 buttons) ===
         int actionsRow1X = centerRowStart(3);

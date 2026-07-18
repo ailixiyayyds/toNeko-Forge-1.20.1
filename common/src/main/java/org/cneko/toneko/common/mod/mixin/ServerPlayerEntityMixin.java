@@ -17,21 +17,7 @@ public class ServerPlayerEntityMixin {
     private void toneko$restoreFrom(ServerPlayer oldPlayer, boolean keepEverything, CallbackInfo ci) {
         INeko newNeko = (INeko) this;
         INeko oldNeko = NekoAccess.require(oldPlayer);
-
-        newNeko.setNeko(oldNeko.isNeko());
-        newNeko.setNekoAge(oldNeko.getNekoAge());
-        newNeko.setNekoLevelFactorData(oldNeko.getNekoLevelFactorData());
-        newNeko.setNekoEnergy(oldNeko.getNekoEnergy());
-        newNeko.setNickName(oldNeko.getNickName());
-
-        newNeko.getOwners().clear();
-        newNeko.getOwners().putAll(oldNeko.getOwners());
-
-        newNeko.getBlockedWords().clear();
-        newNeko.getBlockedWords().addAll(oldNeko.getBlockedWords());
-
-        newNeko.getQuirks().clear();
-        newNeko.getQuirks().addAll(oldNeko.getQuirks());
+        newNeko.copyNekoStateFrom(oldNeko);
     }
 
     @Inject(method = "stopRiding" , at = @At("HEAD"),cancellable = true)

@@ -42,7 +42,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ToNekoNetworkEvents {
-    public static void init(){
+    private static boolean initialized;
+
+    public static synchronized void init(){
+        if (initialized) return;
+        initialized = true;
         ToNekoNetworking.registerC2S(QuirkQueryPayload.ID, QuirkQueryPayload::read, ToNekoNetworkEvents::onQuirkQueryNetWorking);
         ToNekoNetworking.registerC2S(GiftItemPayload.ID, GiftItemPayload::read, ToNekoNetworkEvents::onGiftItem);
         ToNekoNetworking.registerC2S(FollowOwnerPayload.ID, FollowOwnerPayload::read, ToNekoNetworkEvents::onFollowOwner);
@@ -121,6 +125,10 @@ public class ToNekoNetworkEvents {
     }
 
     public static void onChatWithNeko(ChatWithNekoPayload payload, ToNekoNetworking.ServerContext context) {
+        String message = payload.message() == null ? "" : payload.message().trim();
+        if (message.isEmpty()) return;
+        if (message.length() > 1000) message = message.substring(0, 1000);
+        String safeMessage = message;
         processNekoInteractive(context.player(), payload.uuid(), neko -> {
             if (!ConfigUtil.isAIEnabled()){
                 context.player().sendSystemMessage(Component.translatable("messages.toneko.ai.not_enabled"));
@@ -129,7 +137,7 @@ public class ToNekoNetworkEvents {
                 String nekoUuid = neko.getUUID().toString();
                 String playerUuid = player.getUUID().toString();
                 String prompt = neko.generateAIPrompt(player);
-                AIUtil.sendMessage(neko.getUUID(), player.getUUID(), prompt, payload.message(), response -> {
+                AIUtil.sendMessage(neko.getUUID(), player.getUUID(), prompt, safeMessage, response -> {
                     // AIUtil invokes callbacks on its worker pool. Minecraft entity, chat,
                     // task, and networking APIs must only be touched on the server thread.
                     if (player.getServer() == null) return;

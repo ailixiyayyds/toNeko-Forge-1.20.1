@@ -4,6 +4,7 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -11,7 +12,6 @@ import org.cneko.toneko.common.mod.blocks.ToNekoBlocks;
 import org.cneko.toneko.common.mod.client.ToNekoKeyBindings;
 import org.cneko.toneko.common.mod.client.events.ClientNetworkEvents;
 import org.cneko.toneko.common.mod.client.events.ClientPlayerJoinEvent;
-import org.cneko.toneko.common.mod.client.events.ClientTickEvent;
 import org.cneko.toneko.common.mod.client.events.HudRenderEvent;
 import org.cneko.toneko.common.mod.client.renderers.AmmunitionRenderer;
 import org.cneko.toneko.common.mod.client.renderers.GhostNekoRenderer;
@@ -41,11 +41,15 @@ public final class ToNekoForgeClient {
     }
 
     @SubscribeEvent
+    public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
+        ToNekoKeyBindings.createMappings();
+        ToNekoKeyBindings.allMappings().forEach(event::register);
+    }
+
+    @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            ToNekoKeyBindings.init();
             ClientNetworkEvents.init();
-            ClientTickEvent.init();
             ClientPlayerJoinEvent.init();
             HudRenderEvent.init();
             ItemBlockRenderTypes.setRenderLayer(ToNekoBlocks.CATNIP, RenderType.cutout());
