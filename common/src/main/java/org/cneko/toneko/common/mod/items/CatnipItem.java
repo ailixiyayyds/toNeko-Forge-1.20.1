@@ -11,12 +11,15 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.packets.NekoInfoSyncPayload;
+import org.cneko.toneko.common.mod.packets.ToNekoNetworking;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +32,10 @@ public class CatnipItem extends Item implements BazookaItem.Ammunition {
 
     @Override
     public @NotNull ItemStack finishUsingItem(ItemStack stack, @NotNull Level level, @NotNull LivingEntity livingEntity) {
+        // Keep vanilla eating/consumption behavior on both logical sides. The
+        // old implementation only called eat() on the server, leaving the
+        // client use animation and inventory state out of step.
+        ItemStack result = livingEntity.eat(level, stack);
         FoodProperties foodProperties = stack.getItem().getFoodProperties();
         if (foodProperties != null && !livingEntity.level().isClientSide) {
             if (livingEntity instanceof INeko neko && neko.isNeko()){
@@ -37,12 +44,26 @@ public class CatnipItem extends Item implements BazookaItem.Ammunition {
                         10000,
                         0
                 ));
-                // 恢复一点猫猫能量
-                neko.setNekoEnergy(neko.getNekoEnergy() + 30);
+                // 恢复猫猫能量并限制在当前上限内。
+                neko.setNekoEnergy(Math.min(neko.getMaxNekoEnergy(), neko.getNekoEnergy() + 30.0F));
+
+                // The regular slow-tick sync can be almost one second late.
+                // Send the updated value immediately so the HUD responds as
+                // soon as eating completes.
+                if (livingEntity instanceof ServerPlayer serverPlayer) {
+                    ToNekoNetworking.send(serverPlayer, new NekoInfoSyncPayload(
+                            neko.getNekoEnergy(),
+                            neko.getMaxNekoEnergy(),
+                            neko.getNekoLevelFactorRaw("interaction"),
+                            neko.getNekoLevelFactorRaw("combat"),
+                            neko.getNekoLevelFactorRaw("base"),
+                            neko.isNeko(),
+                            neko.getNekoAge()
+                    ));
+                }
             }
-            return livingEntity.eat(level, stack);
         }
-        return stack;
+        return result;
     }
 
     @Override

@@ -27,6 +27,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.function.Consumer;
 
+import static org.cneko.toneko.common.Bootstrap.MODID;
+
 public abstract class NekoArmor<N extends Item & GeoItem> extends DyeableArmorItem implements GeoItem {
     public final AnimatableInstanceCache cache;
     public NekoArmor(ArmorMaterial material, Type type, Properties settings) {
@@ -88,6 +90,15 @@ public abstract class NekoArmor<N extends Item & GeoItem> extends DyeableArmorIt
     @Override
     public int getEnchantmentValue() {
         return 10;
+    }
+
+    @Override
+    public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        // Forge asks the ArmorMaterial for a vanilla layer texture even when
+        // GeckoLib supplies the model. Point that lookup at the real 128x128
+        // GeckoLib textures instead of the nonexistent models/armor path.
+        String texture = "overlay".equals(type) ? "neko_armor_tran.png" : "neko_armor.png";
+        return MODID + ":textures/item/armor/" + texture;
     }
 
     // 这里返回Object的原因是它会导致服务器没法启动 T_T

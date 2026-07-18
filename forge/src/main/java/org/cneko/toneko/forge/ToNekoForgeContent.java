@@ -7,6 +7,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.flag.FeatureFlags;
@@ -18,6 +19,8 @@ import net.minecraft.world.item.ItemNameBlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.RecordItem;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
@@ -68,6 +71,8 @@ import org.cneko.toneko.common.mod.misc.ToNekoSoundEvents;
 import org.cneko.toneko.common.mod.recipes.NekoAggregatorRecipe;
 import org.cneko.toneko.common.util.ConfigUtil;
 
+import java.util.function.Predicate;
+
 public final class ToNekoForgeContent {
     private static final DeferredRegister<Attribute> ATTRIBUTES =
             DeferredRegister.create(ForgeRegistries.ATTRIBUTES, ToNekoForge.MOD_ID);
@@ -83,6 +88,8 @@ public final class ToNekoForgeContent {
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, ToNekoForge.MOD_ID);
     private static final DeferredRegister<MobEffect> EFFECTS =
             DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, ToNekoForge.MOD_ID);
+    private static final DeferredRegister<Enchantment> ENCHANTMENTS =
+            DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, ToNekoForge.MOD_ID);
     private static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(ForgeRegistries.MENU_TYPES, ToNekoForge.MOD_ID);
     private static final DeferredRegister<RecipeType<?>> RECIPE_TYPES =
@@ -108,6 +115,21 @@ public final class ToNekoForgeContent {
                     0xffc0cb, 0xffffff, new Item.Properties()));
 
     static {
+        ENCHANTMENTS.register("reversion", () -> new ItemEnchantment(Enchantment.Rarity.RARE, 1, 1, 1,
+                stack -> stack.is(org.cneko.toneko.common.mod.items.ToNekoItems.NEKO_EARS)
+                        || stack.is(org.cneko.toneko.common.mod.items.ToNekoItems.NEKO_TAIL)
+                        || stack.is(org.cneko.toneko.common.mod.items.ToNekoItems.NEKO_PAWS),
+                EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET));
+        ENCHANTMENTS.register("enforcement", () -> new ItemEnchantment(Enchantment.Rarity.COMMON, 1, 1, 1,
+                stack -> stack.is(org.cneko.toneko.common.mod.items.ToNekoItems.CONTRACT),
+                EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND));
+        ENCHANTMENTS.register("hiss_power", () -> energyBurstEnchantment(Enchantment.Rarity.COMMON, 3, 1, 10));
+        ENCHANTMENTS.register("hiss_spread", () -> energyBurstEnchantment(Enchantment.Rarity.UNCOMMON, 3, 1, 10));
+        ENCHANTMENTS.register("hiss_efficiency", () -> energyBurstEnchantment(Enchantment.Rarity.UNCOMMON, 3, 1, 10));
+        ENCHANTMENTS.register("combo_extend", () -> energyBurstEnchantment(Enchantment.Rarity.RARE, 2, 5, 15));
+        ENCHANTMENTS.register("hiss_root", () -> energyBurstEnchantment(Enchantment.Rarity.RARE, 2, 1, 12));
+        ENCHANTMENTS.register("hiss_demolish", () -> energyBurstEnchantment(Enchantment.Rarity.RARE, 3, 1, 12));
+
         ATTRIBUTES.register("neko.degree", () ->
                 org.cneko.toneko.common.mod.misc.ToNekoAttributes.NEKO_DEGREE);
         ATTRIBUTES.register("neko.max_energy", () ->
@@ -372,6 +394,7 @@ public final class ToNekoForgeContent {
         CREATIVE_TABS.register(bus);
         SOUND_EVENTS.register(bus);
         EFFECTS.register(bus);
+        ENCHANTMENTS.register(bus);
         MENUS.register(bus);
         RECIPE_TYPES.register(bus);
         RECIPE_SERIALIZERS.register(bus);
@@ -436,5 +459,50 @@ public final class ToNekoForgeContent {
                     org.cneko.toneko.common.mod.entities.ToNekoEntities.FIGHTING_NEKO,
                     org.cneko.toneko.common.mod.entities.ToNekoEntities.NOELLE_MAID_NEKO);
         });
+    }
+
+    private static Enchantment energyBurstEnchantment(Enchantment.Rarity rarity, int maxLevel,
+                                                       int baseCost, int perLevelCost) {
+        return new ItemEnchantment(rarity, maxLevel, baseCost, perLevelCost,
+                stack -> stack.is(org.cneko.toneko.common.mod.items.ToNekoItems.NEKO_ENERGY_BURST)
+                        || stack.is(org.cneko.toneko.common.mod.items.ToNekoItems.EVIL_NEKO_ENERGY_BURST),
+                EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND);
+    }
+
+    /** 1.20.1 equivalent of the exact-item, data-driven enchantments used by 1.21. */
+    private static final class ItemEnchantment extends Enchantment {
+        private final int maxLevel;
+        private final int baseCost;
+        private final int perLevelCost;
+        private final Predicate<ItemStack> supportedItem;
+
+        private ItemEnchantment(Enchantment.Rarity rarity, int maxLevel, int baseCost, int perLevelCost,
+                                Predicate<ItemStack> supportedItem, EquipmentSlot... slots) {
+            super(rarity, EnchantmentCategory.BREAKABLE, slots);
+            this.maxLevel = maxLevel;
+            this.baseCost = baseCost;
+            this.perLevelCost = perLevelCost;
+            this.supportedItem = supportedItem;
+        }
+
+        @Override
+        public int getMaxLevel() {
+            return maxLevel;
+        }
+
+        @Override
+        public int getMinCost(int level) {
+            return baseCost + Math.max(0, level - 1) * perLevelCost;
+        }
+
+        @Override
+        public int getMaxCost(int level) {
+            return getMinCost(level) + 15;
+        }
+
+        @Override
+        public boolean canEnchant(ItemStack stack) {
+            return supportedItem.test(stack);
+        }
     }
 }

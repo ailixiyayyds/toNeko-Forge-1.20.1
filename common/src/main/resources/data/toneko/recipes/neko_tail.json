@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IWW"
+  ],
+  "key": {
+    "I": {
+      "tag": "c:nuggets/iron_nuggets"
+    },
+    "W": {
+      "tag" : "c:wool"
+    }
+  },
+  "result": {
+    "item": "toneko:neko_tail",
+    "count": 1
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "toneko:bazooka",
+    "minecraft:bow",
+    "minecraft:crossbow",
+    "minecraft:trident"
+  ]
+}

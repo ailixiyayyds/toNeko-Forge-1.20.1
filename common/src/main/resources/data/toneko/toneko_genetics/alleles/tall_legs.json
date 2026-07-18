@@ -2,7 +2,7 @@
   "dominance": 20,
   "attributes": [
     {
-      "attribute": "minecraft:generic.step_height",
+      "attribute": "forge:step_height_addition",
       "suffix": "step_boost",
       "operation": "add_value",
       "amount": 0.5
