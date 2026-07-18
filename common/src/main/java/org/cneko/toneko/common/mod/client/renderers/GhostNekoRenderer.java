@@ -18,7 +18,9 @@ public class GhostNekoRenderer extends NekoRenderer<GhostNekoEntity> {
 
     @Override
     public void actuallyRender(PoseStack poseStack, GhostNekoEntity entity, BakedGeoModel model, @Nullable RenderType renderType, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        RenderType translucentRenderType = RenderType.entityTranslucent(getTextureLocation(entity));
+        // Calling getTextureLocation here is ambiguous on Forge 1.20.1 because
+        // both EntityRenderer and GeckoLib's GeoRenderer expose that method.
+        RenderType translucentRenderType = RenderType.entityTranslucent(getGeoModel().getTextureResource(entity));
         VertexConsumer translucentBuffer = bufferSource.getBuffer(translucentRenderType);
 
         // 调用父类进行实际渲染

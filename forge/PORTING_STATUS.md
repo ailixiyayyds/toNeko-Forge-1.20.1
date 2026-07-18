@@ -54,6 +54,9 @@ mod, uses ForgeGradle and does not use Connector.
   data reload, login/logout, server and level ticks, block/entity interactions,
   attacks, damage/death, sleep/wake, villager trades, weather transitions and
   formatted chat are connected through the native Forge event bus.
+* The Forge build now generates and packages `toneko.refmap.json` from the
+  1.20.1 Mojmap-to-SRG mappings. Production Forge can therefore resolve Mixin
+  targets such as `Entity#setPose` instead of relying on development names.
 
 ## Current runnable boundary
 
