@@ -40,6 +40,11 @@ public class NekoRenderer<T extends NekoEntity> extends GeoEntityRenderer<T> {
 
     @Override
     public void preRender(PoseStack poseStack, T animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+        // GeckoLib applies its own model transform in super.preRender. Apply
+        // toNeko's gameplay scale afterwards so it is not overwritten.
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender,
+                partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+
         float entityScale = (float) animatable.getAttributeValue(org.cneko.toneko.common.mod.misc.ToNekoAttributes.SCALE);
         if (Float.isFinite(entityScale) && Math.abs(entityScale - 1.0F) > 0.0001F) {
             poseStack.scale(entityScale, entityScale, entityScale);
@@ -55,7 +60,6 @@ public class NekoRenderer<T extends NekoEntity> extends GeoEntityRenderer<T> {
         if (animatable.getPose() == Pose.SWIMMING){
             poseStack.translate(0, -0.5, 0);
         }
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
     }
 
     @Override

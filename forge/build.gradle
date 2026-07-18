@@ -12,6 +12,32 @@ base {
 minecraft {
     mappings channel: 'official', version: rootProject.minecraft_version
     copyIdeResources = true
+
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'info'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', file("${buildDir}/createSrgToMcp/output.srg").absolutePath
+            args '--mixin', 'toneko.mixins.json'
+
+            mods {
+                toneko {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            property 'forge.enabledGameTestNamespaces', 'toneko'
+        }
+
+        server {
+            property 'forge.enabledGameTestNamespaces', 'toneko'
+            args '--nogui'
+        }
+    }
 }
 
 sourceSets {
@@ -34,7 +60,7 @@ repositories {
     // Forge declares MergeTool transitively. Keep a Maven-shaped local cache so
     // that Gradle can resolve the original coordinate when working offline.
     maven { url = uri('local-maven') }
-    flatDir { dirs 'libs' }
+    flatDir { dirs 'libs', 'ffapi-compile', layout.buildDirectory.dir('dev-libs') }
     mavenCentral()
     maven { url = 'https://maven.architectury.dev/' }
     maven { url = 'https://maven.su5ed.dev/releases' }
@@ -42,6 +68,31 @@ repositories {
         name = 'GeckoLib'
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
     }
+}
+
+def ffapiAggregateJar = file('libs/fabric-api-0.92.6+1.11.14+1.20.1.jar')
+def ffapiDevMarkerTask = tasks.register('fabricApiDevMarker', Jar) {
+    archiveFileName = 'fabric-api-dev-marker.jar'
+    destinationDirectory = layout.buildDirectory.dir('dev-libs')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(zipTree(ffapiAggregateJar)) {
+        // In a Forge userdev launch the nested production refmaps are not
+        // remapped. Runtime modules are supplied separately through fg.deobf.
+        exclude 'META-INF/jarjar/**'
+    }
+}
+def ffapiDevModules = fileTree(
+        dir: 'ffapi-compile',
+        include: '*.jar',
+        // toNeko does not use Fabric Screen API. Its production-only client
+        // injection is incompatible with the named Forge userdev namespace.
+        exclude: 'fabric-screen-api-v1-*.jar'
+)
+
+configurations {
+    // Plain Java libraries used by AI chat and TTS/audio playback must travel
+    // with the release JAR; a player's mods folder will not provide them.
+    embeddedRuntime
 }
 
 dependencies {
@@ -53,17 +104,31 @@ dependencies {
     // Temporary bridge while Forge-native event replacements are migrated.
     // The public FFAPI release is cached locally because its Maven host is
     // unreliable in this development environment.
-    implementation fg.deobf('local.ffapi:fabric-api:0.92.6+1.11.14+1.20.1')
+    compileOnly fg.deobf('local.ffapi:fabric-api:0.92.6+1.11.14+1.20.1')
     // Forgified Fabric API ships its modules as jar-in-jar libraries. The
     // aggregate JAR is correct at runtime, but javac must see the modules
     // individually while the remaining API calls are migrated to Forge.
-    implementation files(fileTree(dir: 'ffapi-compile', include: '*.jar'))
+    compileOnly files(fileTree(dir: 'ffapi-compile', include: '*.jar'))
+    runtimeOnly fg.deobf('local.ffapi.dev:fabric-api-dev-marker:0.92.6+1.11.14+1.20.1')
+    ffapiDevModules.files.sort().each { moduleJar ->
+        def matcher = (moduleJar.name - '.jar') =~ /^(.+?)-(\d.*)$/
+        if (!matcher.matches()) {
+            throw new GradleException("Cannot derive FFAPI module coordinates from ${moduleJar.name}")
+        }
+        runtimeOnly fg.deobf("local.ffapi.module:${matcher.group(1)}:${matcher.group(2)}")
+    }
     implementation 'com.github.CSneko:NekoAI:v0.1.3-alpha'
     implementation 'com.github.umjammer:jlayer:1.0.3'
+    embeddedRuntime('com.github.CSneko:NekoAI:v0.1.3-alpha') { transitive = false }
+    embeddedRuntime('com.github.umjammer:jlayer:1.0.3') { transitive = false }
     compileOnly 'io.netty:netty-codec-http:4.1.117.Final'
     compileOnly 'io.netty:netty-handler-proxy:4.1.117.Final'
     compileOnly 'org.projectlombok:lombok:1.18.38'
     annotationProcessor 'org.projectlombok:lombok:1.18.38'
+}
+
+tasks.matching { it.name == 'prepareRuns' }.configureEach {
+    dependsOn ffapiDevMarkerTask
 }
 
 processResources {
@@ -84,13 +149,21 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from({ configurations.embeddedRuntime.collect { zipTree(it) } }) {
+        exclude 'META-INF/MANIFEST.MF'
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.RSA'
+        exclude 'META-INF/*.DSA'
+    }
     manifest {
         attributes([
                 'Specification-Title'     : 'toneko',
                 'Specification-Vendor'    : 'CSneko',
                 'Specification-Version'   : '1',
                 'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.version
+                'Implementation-Version'  : project.version,
+                'MixinConfigs'            : 'toneko.mixins.json'
         ])
     }
 }
