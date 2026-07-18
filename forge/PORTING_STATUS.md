@@ -21,6 +21,10 @@ mod, uses ForgeGradle and does not use Connector.
   HUD, player state, entity renderers and tick callbacks active.
 * Entity scale changes now affect both collision dimensions and the GeckoLib
   model transform; `0.5` was verified in the development world.
+* Armed Neko held items now use GeckoLib's 1.20.1 bone render layer instead of
+  multiplying a 1.21 model-space matrix, which was the source of the stretched
+  triangle/body corruption. Vanilla and convention-tagged melee weapons share
+  the same AI selection path.
 * NekoAI and JLayer are embedded into the release artifact.
 * Player state calls in the migrated GUI, items, commands, events, networking,
   AI goals and respawn-copy path now go through `NekoAccess` instead of relying
@@ -32,6 +36,10 @@ The generated JAR is a gameplay-test milestone, not yet a release candidate.
 It still uses Forgified Fabric API for unported callbacks. Fighting/armed Neko
 rendering, AI chat configuration, persistence across death/reconnect and a
 clean external-modpack launch still require focused gameplay tests.
+The dedicated-server launch reaches Forge's server environment and selects the
+toNeko Mixins without a client-class crash, then stops at the untouched Mojang
+EULA gate. A complete dedicated-world test still requires the server owner to
+accept that EULA.
 
 ## Next implementation order
 

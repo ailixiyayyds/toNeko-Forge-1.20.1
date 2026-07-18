@@ -8,7 +8,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.phys.AABB;
 import org.cneko.toneko.common.mod.entities.FightingNekoEntity;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
@@ -250,8 +254,7 @@ public class NekoAttackGoal extends Goal {
     protected boolean hasMeleeWeapon() {
         for (int i = 0; i < neko.getInventory().getContainerSize(); i++) {
             ItemStack stack = neko.getInventory().getItem(i);
-            if ((stack.is(FightingNekoEntity.MELEE_WEAPON) || stack.getItem() instanceof net.minecraft.world.item.SwordItem) &&
-                    !(stack.getItem() instanceof BazookaItem)) {
+            if (isMeleeWeapon(stack)) {
                 return true;
             }
         }
@@ -338,7 +341,7 @@ public class NekoAttackGoal extends Goal {
         // 遍历背包寻找近战武器
         for (int i = 0; i < neko.getInventory().getContainerSize(); i++) {
             ItemStack stack = neko.getInventory().getItem(i);
-            if (stack.is(FightingNekoEntity.MELEE_WEAPON) && !(stack.getItem() instanceof BazookaItem)) {
+            if (isMeleeWeapon(stack)) {
                 // 与远程武器切换逻辑保持一致，直接更改 selected 槽位
                 neko.getInventory().selected = i;
                 // 强制更新手持物品
@@ -351,7 +354,20 @@ public class NekoAttackGoal extends Goal {
     // 检查是否使用近战武器
     private boolean isUsingMeleeWeapon() {
         ItemStack held = neko.getInventory().getItem(neko.getInventory().selected);
-        return held.is(FightingNekoEntity.MELEE_WEAPON) && !(held.getItem() instanceof BazookaItem);
+        return isMeleeWeapon(held);
+    }
+
+    private boolean isMeleeWeapon(ItemStack stack) {
+        if (stack.isEmpty() || stack.getItem() instanceof BazookaItem) {
+            return false;
+        }
+
+        return stack.is(FightingNekoEntity.MELEE_WEAPON)
+                || stack.is(ItemTags.SWORDS)
+                || stack.is(ItemTags.AXES)
+                || stack.getItem() instanceof SwordItem
+                || stack.getItem() instanceof AxeItem
+                || stack.is(Items.TRIDENT);
     }
 
     // 检查当前是否使用远程武器

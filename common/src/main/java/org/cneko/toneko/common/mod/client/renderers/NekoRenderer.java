@@ -7,8 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -22,6 +20,7 @@ import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
 
 import java.util.Optional;
 
@@ -32,10 +31,39 @@ public class NekoRenderer<T extends NekoEntity> extends GeoEntityRenderer<T> {
 
     public NekoRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new NekoModel<>());
+        addHeldItemLayer();
     }
 
     public NekoRenderer(EntityRendererProvider.Context renderManager, GeoModel<T> model) {
         super(renderManager, model);
+        addHeldItemLayer();
+    }
+
+    private void addHeldItemLayer() {
+        // GeckoLib performs the complete parent/bone transform for this layer.
+        // Multiplying the model-space matrix again corrupts the pose on 4.4.x.
+        addRenderLayer(new BlockAndItemGeoLayer<T>(this,
+                (bone, animatable) -> bone.getName().equals("RightArm")
+                        && !animatable.getItemInHand().isEmpty()
+                        ? animatable.getItemInHand()
+                        : null,
+                (bone, animatable) -> null) {
+            @Override
+            protected ItemDisplayContext getTransformTypeForStack(GeoBone bone, ItemStack stack, T animatable) {
+                return ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+            }
+
+            @Override
+            protected void renderStackForBone(PoseStack poseStack, GeoBone bone, ItemStack stack, T animatable,
+                                              MultiBufferSource bufferSource, float partialTick,
+                                              int packedLight, int packedOverlay) {
+                poseStack.translate(0.1D, -0.6D, -0.1D);
+                poseStack.mulPose(Axis.XP.rotationDegrees(285.0F));
+                poseStack.scale(0.8F, 0.8F, 0.8F);
+                super.renderStackForBone(poseStack, bone, stack, animatable, bufferSource,
+                        partialTick, packedLight, packedOverlay);
+            }
+        });
     }
 
     @Override
@@ -80,6 +108,7 @@ public class NekoRenderer<T extends NekoEntity> extends GeoEntityRenderer<T> {
 
         // Disabled on the 1.20.1 compatibility branch: the upstream 1.21
         // bone-space item transform corrupts the pose matrix under GeckoLib 4.4.
+        /* Legacy 1.21 renderer kept here for reference only.
         if (false && bone.getName().equals("RightArm")) {
             ItemStack mainHandItem = animatable.getItemInHand();
             if (!mainHandItem.isEmpty()) {
@@ -103,6 +132,7 @@ public class NekoRenderer<T extends NekoEntity> extends GeoEntityRenderer<T> {
                 poseStack.popPose();
             }
         }
+        */
     }
 
     public static class NekoModel<T extends NekoEntity> extends GeoModel<T> {
